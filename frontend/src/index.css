@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: theme(colors.slate.950);
+  --color-primary-foreground: theme(colors.slate.50);
+  --color-accent: theme(colors.teal.500);
+  --color-accent-hover: theme(colors.teal.600);
+  --color-warning: theme(colors.amber.500);
+  --color-danger: theme(colors.red.500);
+  --color-success: theme(colors.emerald.500);
+  --font-sans: 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-50 font-sans antialiased selection:bg-teal-500/30;
+  }
+}
