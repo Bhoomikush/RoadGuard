@@ -1,10 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, User, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
 
 export function RegisterPage() {
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   
   // Simple password strength calculation for UI purposes
   const calculateStrength = (pass: string) => {
@@ -17,6 +24,39 @@ export function RegisterPage() {
   };
 
   const strength = calculateStrength(password);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+        },
+      });
+
+      if (error) throw error;
+      
+      // If sign up is successful, redirect to dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during registration');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -38,7 +78,12 @@ export function RegisterPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-slate-900 py-8 px-4 shadow sm:rounded-xl sm:px-10 border border-slate-800">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-300">
                 Full name
@@ -52,6 +97,8 @@ export function RegisterPage() {
                   name="name"
                   type="text"
                   required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="block w-full pl-10 bg-slate-950 border border-slate-700 rounded-lg py-2.5 text-slate-300 placeholder-slate-500 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="John Doe"
                 />
@@ -72,6 +119,8 @@ export function RegisterPage() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 bg-slate-950 border border-slate-700 rounded-lg py-2.5 text-slate-300 placeholder-slate-500 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="you@example.com"
                 />
@@ -136,6 +185,8 @@ export function RegisterPage() {
                   name="confirm-password"
                   type="password"
                   required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="block w-full pl-10 bg-slate-950 border border-slate-700 rounded-lg py-2.5 text-slate-300 placeholder-slate-500 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="••••••••"
                 />
@@ -143,11 +194,9 @@ export function RegisterPage() {
             </div>
 
             <div className="pt-2">
-              <Link to="/dashboard" className="block w-full">
-                <Button variant="primary" className="w-full h-11 text-base">
-                  Create Account
-                </Button>
-              </Link>
+              <Button type="submit" variant="primary" className="w-full h-11 text-base" disabled={loading}>
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </Button>
             </div>
           </form>
         </div>

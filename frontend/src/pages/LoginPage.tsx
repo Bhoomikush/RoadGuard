@@ -1,10 +1,37 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
 
 export function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -26,7 +53,12 @@ export function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-slate-900 py-8 px-4 shadow sm:rounded-xl sm:px-10 border border-slate-800">
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                 Email address
@@ -41,6 +73,8 @@ export function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 bg-slate-950 border border-slate-700 rounded-lg py-2.5 text-slate-300 placeholder-slate-500 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="you@example.com"
                 />
@@ -61,6 +95,8 @@ export function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 bg-slate-950 border border-slate-700 rounded-lg py-2.5 text-slate-300 placeholder-slate-500 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                   placeholder="••••••••"
                 />
@@ -101,11 +137,9 @@ export function LoginPage() {
             </div>
 
             <div>
-              <Link to="/dashboard" className="block w-full">
-                <Button variant="primary" className="w-full h-11 text-base">
-                  Sign in
-                </Button>
-              </Link>
+              <Button type="submit" variant="primary" className="w-full h-11 text-base" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
+              </Button>
             </div>
           </form>
         </div>
