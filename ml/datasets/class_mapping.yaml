@@ -1,0 +1,9 @@
+source_classes:
+  "0": crack
+  "1": crack
+  "2": crack
+  "3": pothole
+
+target_classes:
+  "0": crack
+  "1": pothole

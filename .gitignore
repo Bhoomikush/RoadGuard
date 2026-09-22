@@ -8,6 +8,10 @@ __pycache__/
 venv/
 env/
 .venv/
+backend/venv_broken/
+backend/venv/
+**/__pycache__/
+*.pyc
 
 # Node
 node_modules/
@@ -18,3 +22,23 @@ dist-ssr/
 # Editor
 .vscode/
 .idea/
+
+# ML datasets
+ml/datasets/raw/
+ml/datasets/roadguard_yolo/
+ml/datasets/preview/
+ml/datasets/smoke_test/
+ml/datasets/roadguard_yolo.zip
+ml/datasets/roadguard_yolo_new.zip
+
+# ML training outputs
+ml/runs/
+ml/models/
+ml/weights/
+
+# ML virtual environment
+ml/venv/
+
+# Kaggle credentials
+.kaggle/
+kaggle.json
