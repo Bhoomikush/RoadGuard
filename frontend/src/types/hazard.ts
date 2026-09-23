@@ -5,7 +5,7 @@ export interface Hazard {
   latitude: number;
   longitude: number;
   description?: string;
-  status: 'pending' | 'reviewed' | 'resolved';
+  status: 'pending' | 'under_review' | 'in_progress' | 'resolved';
   severity?: 'low' | 'medium' | 'high' | 'critical';
   created_at: string;
 }

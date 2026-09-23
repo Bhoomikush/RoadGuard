@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AuthorityRoute } from './components/AuthorityRoute';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -10,6 +11,7 @@ import { MapPage } from './pages/MapPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { RiskZonesPage } from './pages/RiskZonesPage';
 import { AssistantPage } from './pages/AssistantPage';
+import { AuthorityDashboard } from './pages/AuthorityDashboard';
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           <Route path="/risk-zones" element={<ProtectedRoute><RiskZonesPage /></ProtectedRoute>} />
           <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+          <Route path="/authority-dashboard" element={<AuthorityRoute><AuthorityDashboard /></AuthorityRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -68,9 +68,34 @@ export function ReportsPage() {
         </div>
       ) : reports.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reports.map(report => (
-            <HazardCard key={report.id} hazard={report} />
-          ))}
+          {reports.map(report => {
+            let label = "Reported";
+            let colorClass = "bg-yellow-900/80 text-yellow-300 border-yellow-500/50"; // reported/pending
+
+            const statusStr = report.status as string;
+            
+            if (statusStr === 'under_review') {
+              label = "Under Review";
+              colorClass = "bg-blue-900/80 text-blue-300 border-blue-500/50";
+            } else if (statusStr === 'in_progress') {
+              label = "In Progress";
+              colorClass = "bg-orange-900/80 text-orange-300 border-orange-500/50";
+            } else if (statusStr === 'resolved') {
+              label = "Resolved";
+              colorClass = "bg-green-900/80 text-green-300 border-green-500/50";
+            }
+
+            return (
+              <div key={report.id} className="relative group">
+                <HazardCard hazard={report} />
+                <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${colorClass} backdrop-blur-sm shadow-sm inline-block`}>
+                    {label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
