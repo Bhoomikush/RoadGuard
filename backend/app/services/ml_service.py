@@ -55,7 +55,19 @@ def predict_image(image_bytes: bytes):
                     "bbox": [round(c, 2) for c in coords]
                 })
 
+    overall_severity = "low"
+    if detections:
+        max_conf = max(d["confidence"] for d in detections)
+        # Normalize in case confidence is > 1 for some reason, exactly like frontend logic
+        normalized_conf = max_conf / 100 if max_conf > 1 else max_conf
+        
+        if normalized_conf >= 0.75:
+            overall_severity = "high"
+        elif normalized_conf >= 0.50:
+            overall_severity = "medium"
+
     return {
         "detected_objects": detections,
-        "total_detections": len(detections)
+        "total_detections": len(detections),
+        "overall_severity": overall_severity
     }

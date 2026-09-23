@@ -55,7 +55,7 @@ export function MapPage() {
           latitude: item.latitude,
           longitude: item.longitude,
           location: `Lat: ${item.latitude?.toFixed(4)}, Lng: ${item.longitude?.toFixed(4)}`,
-          imageUrl: item.image_url,
+          imageUrl: item.image_url ? supabase.storage.from('hazard-images').getPublicUrl(item.image_url).data.publicUrl : undefined,
           createdAt: item.created_at || new Date().toISOString(),
           ai_detections: item.ai_detections
         }));

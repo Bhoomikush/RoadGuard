@@ -1,43 +1,55 @@
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { HazardCard } from '../components/domain/HazardCard';
 import type { Hazard } from '../types';
+import { supabase } from '../lib/supabase';
 
 export function ReportsPage() {
-  const mockReports: Hazard[] = [
-    {
-      id: 'REP-001',
-      type: 'Large Pothole',
-      severity: 'high',
-      status: 'active',
-      latitude: 34.0522,
-      longitude: -118.2437,
-      location: '123 Main St, near 4th Ave intersection',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-      imageUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=800'
-    },
-    {
-      id: 'REP-002',
-      type: 'Fallen Tree Branch',
-      severity: 'medium',
-      status: 'under-repair',
-      latitude: 34.0622,
-      longitude: -118.2537,
-      location: 'Oak Drive, outside Central Park',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-      imageUrl: 'https://images.unsplash.com/photo-1605553255394-bb969ce74390?auto=format&fit=crop&q=80&w=800'
-    },
-    {
-      id: 'REP-003',
-      type: 'Faded Crosswalk',
-      severity: 'low',
-      status: 'fixed',
-      latitude: 34.0422,
-      longitude: -118.2337,
-      location: 'Washington Blvd & 10th St',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(), // 2 weeks ago
-    }
-  ];
+  const [reports, setReports] = useState<Hazard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        if (authError || !session) {
+          setError('You must be logged in to view your reports.');
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: apiHazardsData, error: sbError } = await supabase
+          .from('hazards')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+          
+        if (sbError) throw sbError;
+        
+        const apiHazards: Hazard[] = (apiHazardsData || []).map((item: any) => ({
+          id: item.id?.toString() || Math.random().toString(),
+          type: item.description || 'Reported Hazard',
+          severity: item.severity || 'low',
+          status: item.status || 'pending',
+          latitude: item.latitude,
+          longitude: item.longitude,
+          location: `Lat: ${item.latitude?.toFixed(4)}, Lng: ${item.longitude?.toFixed(4)}`,
+          imageUrl: item.image_url ? supabase.storage.from('hazard-images').getPublicUrl(item.image_url).data.publicUrl : undefined,
+          createdAt: item.created_at || new Date().toISOString(),
+          ai_detections: item.ai_detections
+        }));
+        setReports(apiHazards);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch reports');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchReports();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -46,9 +58,17 @@ export function ReportsPage() {
         description="Track the status and impact of the hazards you've reported to the community."
       />
 
-      {mockReports.length > 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-center">
+          {error}
+        </div>
+      ) : reports.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockReports.map(report => (
+          {reports.map(report => (
             <HazardCard key={report.id} hazard={report} />
           ))}
         </div>

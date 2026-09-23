@@ -1,14 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Camera, Video, MapPin, Send, Loader2 } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { UploadZone } from '../components/domain/UploadZone';
-import { DetectionResult } from '../components/domain/DetectionResult';
+
 import { supabase } from '../lib/supabase';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+
 
 export function ReportPage() {
   const [reportType, setReportType] = useState<'photo' | 'video'>('photo');
@@ -21,7 +21,7 @@ export function ReportPage() {
   const [success, setSuccess] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [mlResult, setMlResult] = useState<any>(null);
-  const navigate = useNavigate();
+
 
   const handleFileSelect = async (selectedFile: File) => {
     // Validate file type
@@ -113,7 +113,7 @@ export function ReportPage() {
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       console.log("3. storage upload started", fileName);
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('hazard-images')
         .upload(fileName, file);
 
@@ -123,16 +123,7 @@ export function ReportPage() {
       }
 
       // Calculate overall severity
-      let overallSeverity = 'low';
-      if (mlResult && mlResult.detected_objects && mlResult.detected_objects.length > 0) {
-        let maxScore = 0;
-        for (const obj of mlResult.detected_objects) {
-          const normalizedConfidence = obj.confidence > 1 ? obj.confidence / 100 : obj.confidence;
-          if (normalizedConfidence > maxScore) maxScore = normalizedConfidence;
-        }
-        if (maxScore >= 0.75) overallSeverity = 'high';
-        else if (maxScore >= 0.50) overallSeverity = 'medium';
-      }
+      let overallSeverity = mlResult?.overall_severity || 'low';
 
       // 3. Post to backend API
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
