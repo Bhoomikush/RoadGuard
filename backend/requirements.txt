@@ -5,3 +5,4 @@ supabase
 ultralytics
 opencv-python-headless
 Pillow
+google-genai

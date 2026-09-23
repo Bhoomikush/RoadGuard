@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { Send, Bot, Sparkles } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { ChatMessage } from '../components/domain/ChatMessage';
@@ -33,7 +34,7 @@ export function AssistantPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
     const userMsg: ChatMessageType = {
@@ -47,17 +48,27 @@ export function AssistantPage() {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/chat', { message: text }, { timeout: 30000 });
       const aiMsg: ChatMessageType = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `This is a simulated response to: "${text}". The RAG backend is not yet connected, but when it is, I will provide contextual answers based on RoadGuard's hazard database and city infrastructure guidelines.`,
+        content: response.data.reply,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, aiMsg]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMsg: ChatMessageType = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "Sorry, I couldn't process that request. Please try again.",
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -117,17 +128,15 @@ export function AssistantPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about local road safety..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-full py-3.5 pl-5 pr-14 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
+                className="w-full bg-slate-900 border border-slate-700 rounded-full py-4 pl-6 pr-16 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 shadow-inner transition-all"
               />
-              <Button 
+              <button 
                 type="submit" 
-                variant="primary" 
-                size="sm" 
-                className="absolute right-1.5 rounded-full w-10 h-10 p-0"
                 disabled={!input.trim() || isTyping}
+                className="absolute right-2 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-gradient-to-r from-teal-500 to-teal-400 text-slate-900 hover:from-teal-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
               >
-                <Send className="w-4 h-4 ml-[-2px]" />
-              </Button>
+                <Send className="w-4 h-4 ml-[-2px] text-slate-900" />
+              </button>
             </form>
           </div>
         </div>
