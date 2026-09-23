@@ -78,3 +78,13 @@ async def create_hazard(hazard: HazardCreate, user_data = Depends(get_current_us
         return result.data[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("")
+async def get_hazards():
+    try:
+        # Fetch hazards ordered by newest first
+        result = supabase.table("hazards").select("*").order("created_at", desc=True).execute()
+        return result.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

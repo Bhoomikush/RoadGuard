@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { MapLegend } from '../components/domain/MapLegend';
@@ -8,7 +8,8 @@ import 'leaflet/dist/leaflet.css';
 import { HazardCard } from '../components/domain/HazardCard';
 import type { Hazard } from '../types';
 
-// Fix Leaflet's default icon path issues
+import { supabase } from '../lib/supabase';
+
 // Fix Leaflet's default icon path issues
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
@@ -32,42 +33,44 @@ const icons = {
 
 export function MapPage() {
   const [selectedHazard, setSelectedHazard] = useState<Hazard | null>(null);
+  const [hazards, setHazards] = useState<Hazard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const mockHazards: Hazard[] = [
-    {
-      id: 'HZ-1042',
-      type: 'Deep Pothole',
-      severity: 'high',
-      status: 'active',
-      latitude: 34.0522,
-      longitude: -118.2437,
-      location: 'Main St & 4th Ave',
-      createdAt: new Date().toISOString(),
-      confidence: 96
-    },
-    {
-      id: 'HZ-1041',
-      type: 'Fallen Branch',
-      severity: 'medium',
-      status: 'under-repair',
-      latitude: 34.0622,
-      longitude: -118.2537,
-      location: 'Oak Rd',
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-      id: 'HZ-1040',
-      type: 'Faded Crossing',
-      severity: 'low',
-      status: 'fixed',
-      latitude: 34.0422,
-      longitude: -118.2337,
-      location: 'School District',
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
-    }
-  ];
+  useEffect(() => {
+    const fetchHazards = async () => {
+      try {
+        const { data: apiHazardsData, error: sbError } = await supabase
+          .from('hazards')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (sbError) throw sbError;
+        
+        const apiHazards: Hazard[] = (apiHazardsData || []).map((item: any) => ({
+          id: item.id?.toString() || Math.random().toString(),
+          type: item.description || 'Unknown Hazard',
+          severity: item.severity || 'low',
+          status: item.status || 'active',
+          latitude: item.latitude,
+          longitude: item.longitude,
+          location: `Lat: ${item.latitude?.toFixed(4)}, Lng: ${item.longitude?.toFixed(4)}`,
+          imageUrl: item.image_url,
+          createdAt: item.created_at || new Date().toISOString(),
+          ai_detections: item.ai_detections
+        }));
+        setHazards(apiHazards);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch hazards');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchHazards();
+  }, []);
 
-  const center: [number, number] = [34.0522, -118.2437]; // Los Angeles
+  const center: [number, number] = [23.1765, 75.7885]; // Ujjain, Madhya Pradesh, India
 
   return (
     <DashboardLayout>
@@ -85,29 +88,52 @@ export function MapPage() {
             style={{ height: '100%', width: '100%', zIndex: 0 }}
             zoomControl={false}
           >
-            {/* Dark mode map tiles */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
-            {mockHazards.map(hazard => (
-              <Marker 
-                key={hazard.id} 
-                position={[hazard.latitude, hazard.longitude]}
-                icon={icons[hazard.severity]}
-                eventHandlers={{
-                  click: () => setSelectedHazard(hazard),
-                }}
-              >
-                <Popup className="roadguard-popup">
-                  <div className="p-1">
-                    <h4 className="font-bold text-slate-900 m-0 text-sm">{hazard.type}</h4>
-                    <p className="text-xs text-slate-600 m-0 mt-1">{hazard.location}</p>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            {hazards.map((hazard) => {
+              const iconKey = (hazard.severity && icons[hazard.severity]) ? hazard.severity : 'low';
+              return (
+                <Marker 
+                  key={hazard.id} 
+                  position={[hazard.latitude, hazard.longitude]}
+                  icon={icons[iconKey]}
+                  eventHandlers={{
+                    click: () => setSelectedHazard(hazard),
+                  }}
+                >
+                  <Popup className="roadguard-popup">
+                    <div className="p-1">
+                      {hazard.imageUrl && (
+                        <img src={hazard.imageUrl} alt={hazard.type} className="w-full h-24 object-cover rounded mb-2" />
+                      )}
+                      <h4 className="font-bold text-slate-900 m-0 text-sm">{hazard.type}</h4>
+                      <p className="text-xs text-slate-600 m-0 mt-1">{hazard.location}</p>
+                      
+                      <div className="flex items-center gap-2 mt-2 mb-1">
+                         <span className={`text-xs font-bold uppercase ${
+                            hazard.severity === 'high' ? 'text-red-600' :
+                            hazard.severity === 'medium' ? 'text-orange-500' :
+                            'text-green-600'
+                         }`}>
+                           {hazard.severity} Risk
+                         </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 m-0 mt-1">Status: {hazard.status}</p>
+                      {hazard.createdAt && (
+                        <p className="text-xs text-slate-500 m-0 mt-1">Reported: {new Date(hazard.createdAt).toLocaleDateString()}</p>
+                      )}
+                      {(hazard as any).ai_detections && (
+                        <p className="text-xs text-teal-600 font-medium m-0 mt-1">AI Detected</p>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
           
           <MapLegend />
@@ -118,7 +144,13 @@ export function MapPage() {
           <h3 className="text-lg font-semibold text-slate-100 mb-4">Nearby Hazards</h3>
           
           <div className="space-y-4 flex-1">
-            {selectedHazard ? (
+            {isLoading ? (
+              <div className="p-4 text-center text-slate-400">Loading hazards...</div>
+            ) : error ? (
+              <div className="p-4 text-center text-red-400">{error}</div>
+            ) : hazards.length === 0 ? (
+              <div className="p-4 text-center text-slate-400">No hazards reported yet</div>
+            ) : selectedHazard ? (
               <div className="animate-in slide-in-from-right-4 duration-300">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-sm text-teal-500 font-medium cursor-pointer hover:underline" onClick={() => setSelectedHazard(null)}>
@@ -129,7 +161,7 @@ export function MapPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {mockHazards.map(hazard => (
+                {hazards.map(hazard => (
                   <div 
                     key={hazard.id} 
                     className="p-3 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer hover:border-teal-500/50 transition-colors"
