@@ -80,11 +80,12 @@ async def create_hazard(hazard: HazardCreate, user_data = Depends(get_current_us
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("")
-async def get_hazards():
+async def get_hazards(user_data = Depends(get_current_user)):
+    token = user_data["token"]
+    req_supabase = create_client(url, key, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
     try:
         # Fetch hazards ordered by newest first
-        result = supabase.table("hazards").select("*").order("created_at", desc=True).execute()
+        result = req_supabase.table("hazards").select("*").order("created_at", desc=True).execute()
         return result.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

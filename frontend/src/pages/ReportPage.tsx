@@ -45,12 +45,14 @@ export function ReportPage() {
     setIsAnalyzing(true);
     setMlResult(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
       const formData = new FormData();
       formData.append('file', selectedFile);
       const response = await axios.post(`${backendUrl}/api/ml/detect`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
         }
       });
       setMlResult(response.data);

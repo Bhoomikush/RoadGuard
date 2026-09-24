@@ -3,7 +3,8 @@ import axios from 'axios';
 import { Send, Bot, Sparkles } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { ChatMessage } from '../components/domain/ChatMessage';
-import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
+
 import type { ChatMessage as ChatMessageType } from '../types';
 
 export function AssistantPage() {
@@ -49,7 +50,11 @@ export function AssistantPage() {
     setIsTyping(true);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/chat', { message: text }, { timeout: 30000 });
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await axios.post('http://127.0.0.1:8000/api/chat', { message: text }, { 
+        timeout: 30000,
+        headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+      });
       const aiMsg: ChatMessageType = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from ..services.rag_service import generate_rag_response
+from .hazards import get_current_user
 
 router = APIRouter()
 
@@ -11,7 +12,7 @@ class ChatResponse(BaseModel):
     reply: str
 
 @router.post("/chat", response_model=ChatResponse)
-def chat_endpoint(request: ChatRequest):
+def chat_endpoint(request: ChatRequest, user_data = Depends(get_current_user)):
     message = request.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty or whitespace.")
