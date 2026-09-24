@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { MapLegend } from '../components/domain/MapLegend';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { HazardCard } from '../components/domain/HazardCard';
 import type { Hazard } from '../types';
 
 import { supabase } from '../lib/supabase';
-
+import { calculateRiskZones } from '../utils/geo';
 // Fix Leaflet's default icon path issues
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
@@ -70,6 +70,9 @@ export function MapPage() {
     fetchHazards();
   }, []);
 
+  // Calculate risk zones from the current hazards
+  const zones = useMemo(() => calculateRiskZones(hazards), [hazards]);
+
   const center: [number, number] = [23.1765, 75.7885]; // Ujjain, Madhya Pradesh, India
 
   return (
@@ -92,6 +95,36 @@ export function MapPage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            
+            {/* Render Risk Zones */}
+            {zones.map((zone) => {
+              const color =
+                zone.level === 'HIGH' ? '#ef4444' : // red-500
+                zone.level === 'MEDIUM' ? '#f59e0b' : // amber-500
+                '#10b981'; // emerald-500
+
+              return (
+                <Circle
+                  key={zone.id}
+                  center={[zone.center.lat, zone.center.lng]}
+                  radius={300}
+                  pathOptions={{ color, fillColor: color, fillOpacity: 0.2, weight: 2 }}
+                >
+                  <Popup className="roadguard-popup">
+                    <div className="p-1">
+                      <h4 className="font-bold text-slate-900 m-0 text-sm">Risk Zone</h4>
+                      <div className="flex items-center gap-2 mt-1 mb-1">
+                        <span className="text-xs font-bold uppercase" style={{ color }}>
+                          {zone.level} RISK
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 m-0 mt-1">Active Hazards: {zone.hazardCount}</p>
+                      <p className="text-xs text-slate-600 m-0 mt-1">Risk Score: {zone.score}</p>
+                    </div>
+                  </Popup>
+                </Circle>
+              );
+            })}
             
             {hazards.map((hazard) => {
               const iconKey = (hazard.severity && icons[hazard.severity]) ? hazard.severity : 'low';
