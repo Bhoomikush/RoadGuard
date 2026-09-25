@@ -27,7 +27,7 @@ export function LandingPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FFC629]/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F3F4F6 0, #F3F4F6 2px, transparent 2px, transparent 15px)' }}></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
           <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-8 uppercase tracking-wide">RoadGuard AI v1.0 is live</div>
           
           <div className="relative inline-block">
@@ -35,7 +35,7 @@ export function LandingPage() {
                See the road. <br />
                <span className="text-[#FFC629]">Understand the risk.</span>
              </h1>
-             <div className="absolute -top-12 -right-16 md:-top-20 md:-right-32 opacity-90 pointer-events-none hidden sm:block">
+             <div className="absolute -top-12 -right-16 md:-top-20 md:-right-32 opacity-90 pointer-events-none hidden sm:block z-[-1]">
                <ConeMascot waving size={220} />
              </div>
           </div>
@@ -44,7 +44,7 @@ export function LandingPage() {
             RoadGuard AI uses computer vision, machine learning, and community intelligence to detect road hazards and identify high-risk areas before accidents happen.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-20">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-20 w-full sm:w-auto">
             <Link to="/report">
               <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-[#FFC629] text-[#0E1013] font-bold text-lg shadow-[0_4px_14px_rgba(255,198,41,0.2)] hover:shadow-[0_6px_20px_rgba(255,198,41,0.4)] hover:scale-105 transition-all">
                 Report a Hazard
