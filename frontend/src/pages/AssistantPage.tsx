@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { ChatMessage } from '../components/domain/ChatMessage';
 import { supabase } from '../lib/supabase';
+import ConeMascot from '../components/ConeMascot';
 
 import type { ChatMessage as ChatMessageType } from '../types';
 
@@ -78,69 +79,68 @@ export function AssistantPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-64px)] max-w-4xl mx-auto py-6">
-        <div className="mb-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-teal-500/10 border border-teal-500/30 flex items-center justify-center mx-auto mb-3 shadow-[0_0_20px_rgba(20,184,166,0.15)]">
-            <Bot className="w-8 h-8 text-teal-400" />
+      <div className="flex flex-col h-[calc(100vh-64px)] max-w-3xl mx-auto pt-6 bg-[#0E1013]">
+        {messages.length <= 1 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="mb-4">
+              <ConeMascot waving size={80} title="" />
+            </div>
+            <h1 className="text-2xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Ask RoadGuard AI</h1>
+            <p className="text-[#9CA3AF] text-sm mb-8">Ask me anything about road safety, hazards, and reporting.</p>
+            
+            <div className="flex flex-wrap justify-center gap-3 max-w-lg">
+              {suggestedPrompts.map((prompt, i) => (
+                <button 
+                  key={i}
+                  onClick={() => handleSend(prompt)}
+                  className="text-[13px] font-medium text-[#F3F4F6] bg-[#161A20] hover:bg-[rgba(255,255,255,0.08)] px-4 py-2.5 rounded-full border border-[rgba(255,255,255,0.08)] transition-colors"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-50 mb-1">RoadGuard AI</h1>
-          <p className="text-slate-400">Ask questions about road safety, hazards, and risk zones.</p>
-        </div>
-
-        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        ) : (
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-6">
             {messages.map(msg => (
               <ChatMessage key={msg.id} message={msg} />
             ))}
             
             {isTyping && (
               <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center shrink-0">
-                  <Bot className="w-5 h-5" />
+                <div className="shrink-0 pt-1">
+                  <ConeMascot waving={false} size={28} title="" />
                 </div>
-                <div className="bg-slate-900 border border-slate-800 px-5 py-4 rounded-2xl rounded-tl-none flex items-center gap-1.5">
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] px-4 py-3.5 rounded-[20px] rounded-bl-none flex items-center gap-1.5 h-10">
+                  <div className="w-1.5 h-1.5 bg-[#9CA3AF] rounded-full animate-pulse"></div>
+                  <div className="w-1.5 h-1.5 bg-[#9CA3AF] rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#9CA3AF] rounded-full animate-pulse [animation-delay:0.4s]"></div>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
+        )}
 
-          <div className="p-4 border-t border-slate-800 bg-slate-950/50">
-            {messages.length === 1 && (
-              <div className="mb-4 flex flex-wrap gap-2">
-                {suggestedPrompts.map((prompt, i) => (
-                  <button 
-                    key={i}
-                    onClick={() => handleSend(prompt)}
-                    className="text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full border border-slate-700 transition-colors flex items-center"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1.5 text-teal-500" />
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            )}
-            
+        <div className="p-4 sm:p-6 bg-[#0E1013] shrink-0">
+          <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[28px] p-1.5 flex items-center relative shadow-lg">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
-              className="relative flex items-center"
+              className="relative flex items-center w-full"
             >
               <input 
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about local road safety..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-full py-4 pl-6 pr-16 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 shadow-inner transition-all"
+                className="w-full bg-[#0E1013] border-none rounded-full py-3.5 pl-6 pr-14 text-[#F3F4F6] placeholder-[#9CA3AF] focus:outline-none text-base"
               />
               <button 
                 type="submit" 
                 disabled={!input.trim() || isTyping}
-                className="absolute right-2 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-gradient-to-r from-teal-500 to-teal-400 text-slate-900 hover:from-teal-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
+                className="absolute right-2 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-[#FFC629] text-[#0E1013] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                <Send className="w-4 h-4 ml-[-2px] text-slate-900" />
+                <Send className="w-4 h-4 ml-[-2px]" />
               </button>
             </form>
           </div>
