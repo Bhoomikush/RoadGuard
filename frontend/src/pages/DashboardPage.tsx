@@ -1,15 +1,84 @@
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight } from 'lucide-react';
+import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../components/ui/Badge';
+import { supabase } from '../lib/supabase';
+import type { Hazard } from '../types';
+import ConeMascot from '../components/ConeMascot';
 
 export function DashboardPage() {
-  const recentHazards = [
-    { id: 'HZ-1042', type: 'Deep Pothole', location: 'Main St & 4th Ave', severity: 'high', status: 'active', time: '10 mins ago' },
-    { id: 'HZ-1041', type: 'Fallen Branch', location: 'Oak Rd', severity: 'medium', status: 'verifying', time: '45 mins ago' },
-    { id: 'HZ-1040', type: 'Faded Crossing', location: 'School District', severity: 'low', status: 'resolved', time: '2 hours ago' },
-    { id: 'HZ-1039', type: 'Traffic Light Out', location: 'Highway 9', severity: 'high', status: 'active', time: '3 hours ago' },
-  ];
+  const [recentHazards, setRecentHazards] = useState<Hazard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRecentHazards = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: sbError } = await supabase
+        .from('hazards')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(4);
+        
+      if (sbError) throw sbError;
+      
+      const mappedHazards: Hazard[] = (data || []).map((item: any) => ({
+        id: item.id?.toString() || Math.random().toString(),
+        type: item.description || 'Reported Hazard',
+        severity: item.severity || 'low',
+        status: item.status || 'pending',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        location: `Lat: ${item.latitude?.toFixed(4)}, Lng: ${item.longitude?.toFixed(4)}`,
+        imageUrl: item.image_url ? supabase.storage.from('hazard-images').getPublicUrl(item.image_url).data.publicUrl : undefined,
+        createdAt: item.created_at || new Date().toISOString(),
+        ai_detections: item.ai_detections
+      }));
+      
+      setRecentHazards(mappedHazards);
+    } catch (err: any) {
+      console.error('Failed to fetch recent hazards:', err);
+      setError('Could not load recent hazards. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentHazards();
+  }, []);
+
+  const timeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return `Just now`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} mins ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hours ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} days ago`;
+  };
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Reported';
+      case 'under_review': return 'Under Review';
+      case 'in_progress': return 'In Progress';
+      case 'resolved': return 'Resolved';
+      default: return status;
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    if (status === 'resolved') return 'success';
+    if (status === 'pending' || status === 'under_review' || status === 'in_progress') return 'danger';
+    return 'default';
+  };
 
   return (
     <DashboardLayout>
@@ -62,80 +131,109 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="bg-[#161A20] rounded-[24px] border border-[rgba(255,255,255,0.08)] h-full flex flex-col">
+            <div className="bg-[#161A20] rounded-[24px] border border-[rgba(255,255,255,0.08)] h-full flex flex-col min-h-[400px]">
               <div className="p-6 border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-[#F3F4F6] font-['Sora',sans-serif]">Recent Hazards</h3>
                 <Link to="/reports" className="text-sm text-[#FFC629] hover:opacity-80 font-medium">View all</Link>
               </div>
               
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto flex-1">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-[#9CA3AF] uppercase bg-[#0E1013]/50">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Hazard</th>
-                      <th className="px-6 py-4 font-medium">Location</th>
-                      <th className="px-6 py-4 font-medium">Severity</th>
-                      <th className="px-6 py-4 font-medium">Status</th>
-                      <th className="px-6 py-4 font-medium">Reported</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentHazards.map((hazard) => (
-                      <tr key={hazard.id} className="border-b border-[rgba(255,255,255,0.08)] last:border-0 hover:bg-[#FFC629]/5 transition-colors">
-                        <td className="px-6 py-4 font-medium text-[#F3F4F6]">{hazard.type}</td>
-                        <td className="px-6 py-4 text-[#9CA3AF] flex items-center">
-                          <MapPin className="w-4 h-4 mr-1.5" />
-                          {hazard.location}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
-                            hazard.severity === 'high' ? 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20' : 
-                            hazard.severity === 'medium' ? 'bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20' : 
-                            'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20'
-                          }`}>
-                            {hazard.severity}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                           <Badge variant={hazard.status === 'resolved' ? 'success' : hazard.status === 'active' ? 'danger' : 'default'}>
-                            {hazard.status.toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-[#9CA3AF]">{hazard.time}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              {/* Mobile Scroll Snap List */}
-              <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 p-4 pb-6">
-                {recentHazards.map((hazard) => (
-                  <div key={hazard.id} className="min-w-[85%] sm:min-w-[300px] snap-center bg-[#0E1013] rounded-[16px] p-5 border border-[rgba(255,255,255,0.08)]">
-                    <div className="flex justify-between items-start mb-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        hazard.severity === 'high' ? 'bg-[#EF4444]/10 text-[#EF4444]' : 
-                        hazard.severity === 'medium' ? 'bg-[#F59E0B]/10 text-[#F59E0B]' : 
-                        'bg-[#22C55E]/10 text-[#22C55E]'
-                      }`}>
-                        {hazard.severity} severity
-                      </span>
-                      <span className="text-xs text-[#9CA3AF]">{hazard.time}</span>
-                    </div>
-                    <h4 className="font-semibold text-[#F3F4F6] text-lg mb-1">{hazard.type}</h4>
-                    <p className="text-sm text-[#9CA3AF] flex items-center mb-4">
-                      <MapPin className="w-3.5 h-3.5 mr-1" />
-                      {hazard.location}
-                    </p>
-                    <div className="mt-auto">
-                      <Badge variant={hazard.status === 'resolved' ? 'success' : hazard.status === 'active' ? 'danger' : 'default'}>
-                        {hazard.status.toUpperCase()}
-                      </Badge>
-                    </div>
+              {isLoading ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8">
+                  <Loader2 className="w-8 h-8 text-[#FFC629] animate-spin mb-4" />
+                  <p className="text-[#9CA3AF]">Loading recent hazards...</p>
+                </div>
+              ) : error ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#EF4444]/10 flex items-center justify-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-[#EF4444]" />
                   </div>
-                ))}
-              </div>
+                  <p className="text-[#EF4444] mb-4">{error}</p>
+                  <button 
+                    onClick={fetchRecentHazards}
+                    className="inline-flex items-center px-4 py-2 bg-[#0E1013] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm font-medium hover:border-[#FFC629]/50 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry
+                  </button>
+                </div>
+              ) : recentHazards.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                  <ConeMascot size={120} waving={false} title="No hazards reported" />
+                  <h3 className="text-lg font-semibold text-[#F3F4F6] mt-4 mb-2">No hazards reported yet</h3>
+                  <p className="text-[#9CA3AF] text-sm max-w-sm">When new hazards are reported by the community, they will appear here.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto flex-1">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-[#9CA3AF] uppercase bg-[#0E1013]/50">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Hazard</th>
+                          <th className="px-6 py-4 font-medium">Location</th>
+                          <th className="px-6 py-4 font-medium">Severity</th>
+                          <th className="px-6 py-4 font-medium">Status</th>
+                          <th className="px-6 py-4 font-medium">Reported</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentHazards.map((hazard) => (
+                          <tr key={hazard.id} className="border-b border-[rgba(255,255,255,0.08)] last:border-0 hover:bg-[#FFC629]/5 transition-colors">
+                            <td className="px-6 py-4 font-medium text-[#F3F4F6]">{hazard.type}</td>
+                            <td className="px-6 py-4 text-[#9CA3AF] flex items-center">
+                              <MapPin className="w-4 h-4 mr-1.5 shrink-0" />
+                              <span className="truncate max-w-[200px]">{hazard.location}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
+                                hazard.severity === 'high' ? 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20' : 
+                                hazard.severity === 'medium' ? 'bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20' : 
+                                'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20'
+                              }`}>
+                                {hazard.severity}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                               <Badge variant={getStatusBadgeVariant(hazard.status as string)}>
+                                {formatStatus(hazard.status as string)}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 text-[#9CA3AF]">{timeAgo(hazard.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Mobile Scroll Snap List */}
+                  <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 p-4 pb-6">
+                    {recentHazards.map((hazard) => (
+                      <div key={hazard.id} className="min-w-[85%] sm:min-w-[300px] snap-center bg-[#0E1013] rounded-[16px] p-5 border border-[rgba(255,255,255,0.08)]">
+                        <div className="flex justify-between items-start mb-3">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            hazard.severity === 'high' ? 'bg-[#EF4444]/10 text-[#EF4444]' : 
+                            hazard.severity === 'medium' ? 'bg-[#F59E0B]/10 text-[#F59E0B]' : 
+                            'bg-[#22C55E]/10 text-[#22C55E]'
+                          }`}>
+                            {hazard.severity} severity
+                          </span>
+                          <span className="text-xs text-[#9CA3AF]">{timeAgo(hazard.createdAt)}</span>
+                        </div>
+                        <h4 className="font-semibold text-[#F3F4F6] text-lg mb-1 truncate">{hazard.type}</h4>
+                        <p className="text-sm text-[#9CA3AF] flex items-center mb-4">
+                          <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" />
+                          <span className="truncate">{hazard.location}</span>
+                        </p>
+                        <div className="mt-auto">
+                          <Badge variant={getStatusBadgeVariant(hazard.status as string)}>
+                            {formatStatus(hazard.status as string)}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
