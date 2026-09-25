@@ -103,7 +103,7 @@ export function RegisterPage() {
         </div>
         <div className="absolute bottom-4 right-12 pointer-events-none z-0">
           <div style={{ width: 'clamp(180px, 18vw, 260px)' }}>
-            <ConeMascot size={260} waving={true} title="" className="w-full h-auto drop-shadow-2xl" />
+            <ConeMascot size={220} title="" className="w-full h-auto drop-shadow-2xl" />
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export function RegisterPage() {
             <ChevronLeft className="w-6 h-6" />
           </Link>
           <div className="relative mt-4 mb-2">
-            <ConeMascot size={100} waving={true} title="" className="relative z-10 drop-shadow-lg" />
+            <ConeMascot size={220} title="" className="relative z-10 drop-shadow-lg" />
           </div>
           <div className="w-full h-[40px] text-[#0E1013] absolute -bottom-[1px] pointer-events-none">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-full fill-current">

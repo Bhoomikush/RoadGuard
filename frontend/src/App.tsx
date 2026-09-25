@@ -12,6 +12,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { RiskZonesPage } from './pages/RiskZonesPage';
 import { AssistantPage } from './pages/AssistantPage';
 import { AuthorityDashboard } from './pages/AuthorityDashboard';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -31,6 +32,9 @@ function App() {
           <Route path="/risk-zones" element={<ProtectedRoute><RiskZonesPage /></ProtectedRoute>} />
           <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
           <Route path="/authority-dashboard" element={<AuthorityRoute><AuthorityDashboard /></AuthorityRoute>} />
+          
+          {/* Catch-all */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthProvider>

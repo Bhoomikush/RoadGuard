@@ -56,7 +56,7 @@ export function LoginPage() {
           <div className="absolute top-[40%] left-1/2 -translate-x-1/2 bg-[#FFC629] rounded-full w-[250px] h-[250px] blur-[80px] opacity-[0.12] pointer-events-none"></div>
           
           <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
-            <ConeMascot size={240} waving={true} title="" className="drop-shadow-xl" />
+            <ConeMascot size={220} title="" className="drop-shadow-xl" />
           </div>
 
           <div className="w-full h-[60px] text-[#161A20] absolute bottom-0 pointer-events-none">
@@ -140,7 +140,7 @@ export function LoginPage() {
         </div>
         <div className="absolute bottom-4 right-12 pointer-events-none z-0">
           <div style={{ width: 'clamp(180px, 18vw, 260px)' }}>
-            <ConeMascot size={260} waving={true} title="" className="w-full h-auto drop-shadow-2xl" />
+            <ConeMascot size={220} title="" className="w-full h-auto drop-shadow-2xl" />
           </div>
         </div>
       </div>
@@ -157,7 +157,7 @@ export function LoginPage() {
             <ChevronLeft className="w-6 h-6" />
           </button>
           <div className="relative mt-4 mb-2">
-            <ConeMascot size={150} waving={true} title="" className="relative z-10 drop-shadow-lg" />
+            <ConeMascot size={220} title="" className="relative z-10 drop-shadow-lg" />
           </div>
           <div className="w-full h-[40px] text-[#0E1013] absolute -bottom-[1px] pointer-events-none">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-full fill-current">

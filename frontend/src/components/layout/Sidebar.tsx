@@ -65,7 +65,7 @@ export function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`relative flex items-center px-3 py-3 rounded-lg text-[15px] font-medium transition-colors ${
                   isActive 
                     ? 'bg-[#FFC629]/10 text-[#FFC629]' 
                     : 'text-[#9CA3AF] hover:text-[#F3F4F6]'
@@ -84,13 +84,13 @@ export function Sidebar() {
 
       <div className="p-4 border-t border-[rgba(255,255,255,0.08)]">
         <div className="space-y-1 mb-4">
-          <Link to="/settings" className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors">
+          <Link to="/settings" className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors">
             <Settings className="w-5 h-5 mr-3 text-[#9CA3AF]" />
             Settings
           </Link>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:bg-[#EF4444]/10 hover:text-[#EF4444] transition-colors"
+            className="w-full flex items-center px-3 py-3 rounded-lg text-sm font-medium text-[#9CA3AF] hover:bg-[#EF4444]/10 hover:text-[#EF4444] transition-colors"
           >
             <LogOut className="w-5 h-5 mr-3" />
             Logout

@@ -40,7 +40,7 @@ export default function ConeMascot({
       <ellipse cx="120" cy="281" rx="88" ry="10" fill="#000" opacity="0.35" />
 
       {/* sparkles */}
-      <g fill="var(--color-signal)">
+      <g fill="#FFC629">
         <path
           transform="translate(200 72)"
           d="M0-11 Q1-1 11 0 Q1 1 0 11 Q-1 1 -11 0 Q-1-1 0-11Z"
@@ -59,7 +59,7 @@ export default function ConeMascot({
       {/* cone body */}
       <path
         d="M103 38 C108 24 132 24 137 38 L184 252 L56 252 Z"
-        fill="var(--color-cone)"
+        fill="#FF7A1A"
       />
 
       {/* reflective stripes */}
@@ -99,23 +99,23 @@ export default function ConeMascot({
       <g className={waving ? "rg-cone-wave" : undefined}>
         <path
           d="M76 178 Q42 168 34 134"
-          stroke="var(--color-text-primary)"
+          stroke="#F3F4F6"
           strokeWidth="11"
           strokeLinecap="round"
           fill="none"
         />
-        <circle cx="32" cy="124" r="12" fill="var(--color-text-primary)" />
+        <circle cx="32" cy="124" r="12" fill="#F3F4F6" />
       </g>
 
       {/* right arm (resting) */}
       <path
         d="M164 178 Q198 186 194 214"
-        stroke="var(--color-text-primary)"
+        stroke="#F3F4F6"
         strokeWidth="11"
         strokeLinecap="round"
         fill="none"
       />
-      <circle cx="194" cy="220" r="12" fill="var(--color-text-primary)" />
+      <circle cx="194" cy="220" r="12" fill="#F3F4F6" />
     </svg>
   );
 }
