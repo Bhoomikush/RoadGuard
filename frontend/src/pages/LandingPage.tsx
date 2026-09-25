@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { Button } from '../components/ui/Button';
-import { Card, CardContent } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
+import ConeMascot from '../components/ConeMascot';
 import { 
   ShieldAlert, 
   Map, 
@@ -20,75 +18,78 @@ import {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-[#0E1013] font-['Inter',sans-serif]">
       <Navbar />
       
       {/* Hero Section */}
       <section className="relative pt-24 pb-32 overflow-hidden">
-        {/* Background glow effects */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-0 right-0 w-[400px] h-[300px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        {/* Background glow effects & dashed line pattern */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FFC629]/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F3F4F6 0, #F3F4F6 2px, transparent 2px, transparent 15px)' }}></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <Badge variant="success" className="mb-6 mx-auto px-3 py-1">RoadGuard AI v1.0 is live</Badge>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-50 tracking-tight mb-8 leading-tight">
-            See the road. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500">
-              Understand the risk.
-            </span>
-          </h1>
-          <p className="mt-4 text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-8 uppercase tracking-wide">RoadGuard AI v1.0 is live</div>
+          
+          <div className="relative inline-block">
+             <h1 className="text-5xl md:text-7xl font-extrabold text-[#F3F4F6] tracking-tight mb-8 leading-tight font-['Sora',sans-serif]">
+               See the road. <br />
+               <span className="text-[#FFC629]">Understand the risk.</span>
+             </h1>
+             <div className="absolute -top-12 -right-16 md:-top-20 md:-right-32 opacity-90 pointer-events-none hidden sm:block">
+               <ConeMascot waving size={220} />
+             </div>
+          </div>
+
+          <p className="mt-4 text-xl text-[#9CA3AF] max-w-3xl mx-auto mb-10 leading-relaxed">
             RoadGuard AI uses computer vision, machine learning, and community intelligence to detect road hazards and identify high-risk areas before accidents happen.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-20">
             <Link to="/report">
-              <Button variant="primary" size="lg" className="w-full sm:w-auto h-14 px-8 text-base shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all">
+              <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-[#FFC629] text-[#0E1013] font-bold text-lg shadow-[0_4px_14px_rgba(255,198,41,0.2)] hover:shadow-[0_6px_20px_rgba(255,198,41,0.4)] hover:scale-105 transition-all">
                 Report a Hazard
-              </Button>
+              </button>
             </Link>
             <Link to="/map">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-base">
+              <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-transparent border-2 border-[rgba(243,244,246,0.3)] text-[#F3F4F6] font-bold text-lg hover:border-[#F3F4F6] hover:bg-[#F3F4F6]/5 transition-all">
                 Explore the Map
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
 
         {/* Hero Visual Mockup */}
         <div className="max-w-5xl mx-auto mt-20 px-4 sm:px-6 relative">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 backdrop-blur-sm p-2 shadow-2xl relative">
-            <div className="absolute -top-3 -right-3">
+          <div className="rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[#161A20] p-2 shadow-2xl relative">
+            <div className="absolute -top-3 -right-3 z-10">
               <span className="relative flex h-6 w-6">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-6 w-6 bg-red-500 border-2 border-slate-900"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-6 w-6 bg-[#EF4444] border-2 border-[#161A20]"></span>
               </span>
             </div>
-            <div className="rounded-xl overflow-hidden bg-slate-950 aspect-[16/9] relative border border-slate-800/50">
+            <div className="rounded-[16px] overflow-hidden bg-[#0E1013] aspect-[16/9] relative border border-[rgba(255,255,255,0.08)]">
                {/* Decorative grid */}
-               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#F3F4F6 1px, transparent 1px), linear-gradient(90deg, #F3F4F6 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
                
                {/* UI Mockup Elements */}
                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-[60%] h-[60%] rounded-lg border-2 border-teal-500/30 bg-teal-500/5 relative group transition-all duration-500 hover:border-teal-500">
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 shadow-xl flex items-center gap-3">
-                      <Bot className="w-5 h-5 text-teal-400" />
+                  <div className="w-[60%] h-[60%] rounded-lg border-2 border-[#FFC629]/40 bg-[#FFC629]/5 relative group transition-all duration-500 hover:border-[#FFC629]">
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[12px] px-4 py-2 shadow-xl flex items-center gap-3 whitespace-nowrap">
+                      <Bot className="w-5 h-5 text-[#FFC629]" />
                       <div>
-                        <p className="text-xs font-semibold text-slate-200">RoadGuard AI Detection</p>
-                        <p className="text-[10px] text-teal-400">Confidence: 94%</p>
+                        <p className="text-xs font-semibold text-[#F3F4F6]">RoadGuard AI Detection</p>
+                        <p className="text-[10px] text-[#FFC629]">Confidence: 94%</p>
                       </div>
-                      <div className="h-6 w-px bg-slate-700 mx-1"></div>
-                      <div>
-                        <Badge variant="danger">HIGH</Badge>
-                      </div>
+                      <div className="h-6 w-px bg-[rgba(255,255,255,0.1)] mx-1"></div>
+                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EF4444] text-white">HIGH</div>
                     </div>
                     {/* Bounding box corners */}
-                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-teal-500"></div>
-                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-teal-500"></div>
-                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-teal-500"></div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-teal-500"></div>
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FFC629]"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FFC629]"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FFC629]"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FFC629]"></div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-slate-500/50 text-sm font-medium tracking-widest uppercase">Pothole detected</span>
+                      <span className="text-[#FFC629]/80 text-sm font-bold tracking-widest uppercase">Pothole detected</span>
                     </div>
                   </div>
                </div>
@@ -98,11 +99,12 @@ export function LandingPage() {
       </section>
 
       {/* Problem Section */}
-      <section id="problem" className="py-24 bg-slate-900/50 border-y border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="problem" className="py-24 border-y border-[rgba(255,255,255,0.08)] relative">
+        <div className="absolute inset-0 bg-[#0E1013]/50"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-50 mb-4">The Infrastructure Blindspot</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Traditional road maintenance relies on fragmented data, leading to reactive fixes instead of proactive safety.</p>
+            <h2 className="text-3xl font-bold text-[#F3F4F6] mb-4 font-['Sora',sans-serif]">The Infrastructure Blindspot</h2>
+            <p className="text-[#9CA3AF] max-w-2xl mx-auto text-lg">Traditional road maintenance relies on fragmented data, leading to reactive fixes instead of proactive safety.</p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-8">
@@ -112,12 +114,12 @@ export function LandingPage() {
               { icon: Activity, title: "Scattered Data", desc: "Information sits in silos, making it hard to see the big picture." },
               { icon: BarChart3, title: "Rarely Analyzed", desc: "Lack of city-level risk analysis prevents data-driven infrastructure planning." }
             ].map((item, i) => (
-              <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center">
-                <div className="w-12 h-12 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-6 h-6 text-slate-400" />
+              <div key={i} className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-6 text-center hover:border-[rgba(255,255,255,0.2)] transition-colors">
+                <div className="w-14 h-14 bg-[#0E1013] border border-[rgba(255,255,255,0.08)] rounded-xl flex items-center justify-center mx-auto mb-5">
+                  <item.icon className="w-6 h-6 text-[#FFC629]" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-200 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-400">{item.desc}</p>
+                <h3 className="text-lg font-bold text-[#F3F4F6] mb-3">{item.title}</h3>
+                <p className="text-sm text-[#9CA3AF] leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -128,13 +130,13 @@ export function LandingPage() {
       <section id="how-it-works" className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4">Process</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">How RoadGuard Works</h2>
+            <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-4 uppercase tracking-wide">Process</div>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#F3F4F6] mb-4 font-['Sora',sans-serif]">How RoadGuard Works</h2>
           </div>
 
           <div className="relative">
             {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
+            <div className="hidden md:block absolute top-[42px] left-[10%] right-[10%] h-0.5 bg-[rgba(255,255,255,0.08)] z-0"></div>
 
             <div className="grid md:grid-cols-4 gap-8 relative z-10">
               {[
@@ -144,14 +146,14 @@ export function LandingPage() {
                 { step: "4", title: "Protect", icon: CheckCircle, desc: "Alerts are sent to drivers and maintenance crews." }
               ].map((item, i) => (
                 <div key={i} className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-teal-500/30 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(20,184,166,0.15)] relative">
-                    <item.icon className="w-7 h-7 text-teal-400" />
-                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-center">
+                  <div className="w-[84px] h-[84px] rounded-[24px] bg-[#161A20] border border-[rgba(255,255,255,0.08)] flex items-center justify-center mb-6 shadow-xl relative rotate-3 hover:rotate-0 transition-transform">
+                    <item.icon className="w-8 h-8 text-[#FFC629]" />
+                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#FF7A1A] text-white font-bold text-sm flex items-center justify-center shadow-lg border-[3px] border-[#0E1013]">
                       {item.step}
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-200 mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-400">{item.desc}</p>
+                  <h3 className="text-xl font-bold text-[#F3F4F6] mb-2">{item.title}</h3>
+                  <p className="text-sm text-[#9CA3AF] leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -160,12 +162,13 @@ export function LandingPage() {
       </section>
 
       {/* Core Features */}
-      <section id="features" className="py-24 bg-slate-900/50 border-t border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-24 border-t border-[rgba(255,255,255,0.08)] relative">
+        <div className="absolute inset-0 bg-[#0E1013]/50"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-16">
-            <Badge className="mb-4">Features</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-50 mb-4">Intelligent Infrastructure</h2>
-            <p className="text-slate-400 max-w-2xl">Everything you need to monitor and manage road safety at scale.</p>
+            <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-4 uppercase tracking-wide">Features</div>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#F3F4F6] mb-4 font-['Sora',sans-serif]">Intelligent Infrastructure</h2>
+            <p className="text-[#9CA3AF] max-w-2xl text-lg">Everything you need to monitor and manage road safety at scale.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -177,15 +180,13 @@ export function LandingPage() {
               { icon: Target, title: "Risk Hotspot Detection", desc: "Algorithmic clustering identifies dangerous road segments needing permanent fixes." },
               { icon: Bell, title: "Automated Alerts", desc: "Location-based notifications warn drivers approaching high-risk areas." }
             ].map((feature, i) => (
-              <Card key={i} className="bg-slate-950 hover:bg-slate-900 transition-colors group cursor-default">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center mb-4 group-hover:border-teal-500/50 group-hover:bg-teal-500/10 transition-colors">
-                    <feature.icon className="w-6 h-6 text-slate-300 group-hover:text-teal-400 transition-colors" />
+              <div key={i} className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-8 hover:border-[rgba(255,255,255,0.2)] transition-colors group">
+                  <div className="w-14 h-14 bg-[#0E1013] border border-[rgba(255,255,255,0.08)] rounded-xl flex items-center justify-center mb-6 group-hover:border-[#FFC629]/50 transition-colors">
+                    <feature.icon className="w-7 h-7 text-[#9CA3AF] group-hover:text-[#FFC629] transition-colors" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-200 mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
-                </CardContent>
-              </Card>
+                  <h3 className="text-xl font-bold text-[#F3F4F6] mb-3">{feature.title}</h3>
+                  <p className="text-sm text-[#9CA3AF] leading-relaxed">{feature.desc}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -193,18 +194,17 @@ export function LandingPage() {
 
       {/* CTA */}
       <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-teal-900/20"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjAsIDE4NCwgMTY2LCAwLjIpIi8+PC9zdmc+')] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+        <div className="absolute inset-0 bg-[#FFC629]/5"></div>
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F3F4F6 0, #F3F4F6 2px, transparent 2px, transparent 15px)' }}></div>
         
         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Help make every road safer.</h2>
-          <p className="text-xl text-teal-100/80 mb-10 max-w-2xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#F3F4F6] mb-6 font-['Sora',sans-serif]">Help make every road safer.</h2>
+          <p className="text-xl text-[#9CA3AF] mb-10 max-w-2xl mx-auto leading-relaxed">
             Join the community of drivers, city planners, and safety advocates using AI to map and resolve infrastructure issues.
           </p>
-          <Link to="/register">
-            <Button variant="primary" size="lg" className="h-14 px-8 text-lg" icon={ChevronRight} iconPosition="right">
-              Get Started
-            </Button>
+          <Link to="/register" className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-[#FFC629] text-[#0E1013] font-bold text-lg hover:opacity-90 hover:scale-105 transition-all">
+            Get Started
+            <ChevronRight className="w-5 h-5 ml-2" />
           </Link>
         </div>
       </section>
