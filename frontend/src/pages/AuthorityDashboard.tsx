@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { PageHeader } from '../components/ui/PageHeader';
-import { HazardCard } from '../components/domain/HazardCard';
-import { StatCard } from '../components/ui/StatCard';
+import { SeverityBadge } from '../components/ui/SeverityBadge';
+import { StatusBadge } from '../components/ui/StatusBadge';
 import type { Hazard } from '../types';
 import { supabase } from '../lib/supabase';
-import { FileText, AlertCircle, Clock, CheckCircle, Search } from 'lucide-react';
+import { FileText, AlertCircle, Clock, CheckCircle, Search, MapPin } from 'lucide-react';
 
 export function AuthorityDashboard() {
   const [reports, setReports] = useState<Hazard[]>([]);
@@ -74,91 +73,140 @@ export function AuthorityDashboard() {
   const inProgressCount = reports.filter(r => (r.status as string) === 'in_progress').length;
   const resolvedCount = reports.filter(r => (r.status as string) === 'resolved').length;
 
+  const StatCardPhase8 = ({ title, value, icon: Icon }: { title: string, value: number, icon: any }) => (
+    <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-6 flex flex-col justify-between h-full min-h-[140px]">
+      <div className="flex items-start justify-between mb-4">
+        <h3 className="text-[#9CA3AF] text-[15px] font-medium">{title}</h3>
+        <div className="w-10 h-10 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center shrink-0">
+          <Icon className="w-5 h-5 text-[#FFC629]" />
+        </div>
+      </div>
+      <div className="text-4xl font-['Sora',sans-serif] font-bold text-[#F3F4F6]">{value}</div>
+    </div>
+  );
+
+  const timeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const getAiConfidence = (report: Hazard) => {
+    const r = report as any;
+    if (!r.ai_detections || !Array.isArray(r.ai_detections) || r.ai_detections.length === 0) return null;
+    const maxConf = Math.max(...r.ai_detections.map((d: any) => d.confidence || 0));
+    return maxConf > 0 ? Math.round(maxConf * 100) : null;
+  };
+
   return (
     <DashboardLayout>
-      <PageHeader 
-        title="Authority Dashboard" 
-        description="Review and manage reported road hazards."
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <StatCard title="Total Reports" value={totalReports} icon={FileText} />
-        <StatCard title="Reported" value={reportedCount} icon={AlertCircle} />
-        <StatCard title="Under Review" value={underReviewCount} icon={Search} />
-        <StatCard title="In Progress" value={inProgressCount} icon={Clock} />
-        <StatCard title="Resolved" value={resolvedCount} icon={CheckCircle} />
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="max-w-6xl mx-auto px-4 py-8 pb-20 space-y-8">
+        <div>
+          <h1 className="text-3xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Authority Dashboard</h1>
+          <p className="text-[#9CA3AF] text-sm">Review and manage reported road hazards.</p>
         </div>
-      ) : error ? (
-        <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-center">
-          {error}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCardPhase8 title="Total Reports" value={totalReports} icon={FileText} />
+          <StatCardPhase8 title="Reported" value={reportedCount} icon={AlertCircle} />
+          <StatCardPhase8 title="Under Review" value={underReviewCount} icon={Search} />
+          <StatCardPhase8 title="In Progress" value={inProgressCount} icon={Clock} />
+          <StatCardPhase8 title="Resolved" value={resolvedCount} icon={CheckCircle} />
         </div>
-      ) : reports.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reports.map(report => {
-            let label = "Reported";
-            let colorClass = "bg-yellow-900/80 text-yellow-300 border-yellow-500/50"; // reported/pending
 
-            const statusStr = report.status as string;
-            
-            if (statusStr === 'under_review') {
-              label = "Under Review";
-              colorClass = "bg-blue-900/80 text-blue-300 border-blue-500/50";
-            } else if (statusStr === 'in_progress') {
-              label = "In Progress";
-              colorClass = "bg-orange-900/80 text-orange-300 border-orange-500/50";
-            } else if (statusStr === 'resolved') {
-              label = "Resolved";
-              colorClass = "bg-green-900/80 text-green-300 border-green-500/50";
-            }
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="w-8 h-8 border-4 border-[#FFC629] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-[24px] p-5 text-[#EF4444]">
+            {error}
+          </div>
+        ) : reports.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {reports.map(report => {
+              const confidence = getAiConfidence(report);
+              const statusStr = report.status as string;
+              return (
+                <div key={report.id} className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-5 flex flex-col sm:flex-row gap-5 hover:border-[rgba(255,255,255,0.15)] transition-colors">
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
+                      <h3 className="text-lg font-semibold text-[#F3F4F6] truncate pr-4">{report.type}</h3>
+                      <div className="flex flex-wrap gap-2 shrink-0">
+                        <SeverityBadge severity={report.severity} />
+                        <StatusBadge status={report.status} />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mt-auto pt-2">
+                      <div className="flex items-center gap-2 text-[#9CA3AF] text-sm">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{report.location}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-[#9CA3AF] text-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 shrink-0" />
+                          <span>Reported {timeAgo(report.createdAt)}</span>
+                        </div>
+                        {confidence !== null && (
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)]">
+                            <span className="w-2 h-2 rounded-full bg-[#FFC629]"></span>
+                            <span className="text-xs font-medium text-[#F3F4F6]">AI {confidence}% match</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-            return (
-              <div key={report.id} className="relative group flex flex-col">
-                <div className="flex-1">
-                  <HazardCard hazard={report} />
-                </div>
-                <div className="absolute top-3 left-3 z-10 pointer-events-none">
-                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${colorClass} backdrop-blur-sm shadow-sm inline-block`}>
-                    {label}
-                  </span>
-                </div>
-                
-                <div className="mt-3 p-3 bg-slate-800/80 rounded-lg border border-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-300">Set Status:</span>
-                    <select
-                      disabled={updatingId === report.id}
-                      value={statusStr}
-                      onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                      className="bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-md focus:ring-teal-500 focus:border-teal-500 p-1.5 outline-none disabled:opacity-50 min-w-[130px]"
-                    >
-                      <option value="pending">Reported</option>
-                      <option value="under_review">Under Review</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                    </select>
+                    <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between">
+                      <span className="text-sm font-medium text-[#9CA3AF]">Update Status:</span>
+                      <div className="flex items-center gap-3">
+                        {updatingId === report.id && (
+                          <span className="text-xs text-[#FFC629] animate-pulse">Updating...</span>
+                        )}
+                        <select
+                          disabled={updatingId === report.id}
+                          value={statusStr}
+                          onChange={(e) => handleStatusChange(report.id, e.target.value)}
+                          className="bg-[#0E1013] border border-[rgba(255,255,255,0.08)] text-[#F3F4F6] text-sm rounded-lg focus:ring-1 focus:ring-[#FFC629] focus:border-[#FFC629] p-2 outline-none disabled:opacity-50 min-w-[140px]"
+                        >
+                          <option value="pending">Reported</option>
+                          <option value="under_review">Under Review</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  {updatingId === report.id && (
-                    <div className="text-xs text-teal-400 mt-2 text-right animate-pulse">Updating database...</div>
+                  
+                  {report.imageUrl && (
+                    <div className="shrink-0 sm:w-[160px] h-[160px] w-full rounded-[12px] overflow-hidden bg-[#0E1013] border border-[rgba(255,255,255,0.04)]">
+                      <img src={report.imageUrl} alt={report.type} className="w-full h-full object-cover" />
+                    </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mb-6">
-            <div className="w-10 h-10 border-4 border-dashed border-slate-700 rounded-full"></div>
+              );
+            })}
           </div>
-          <h3 className="text-xl font-semibold text-slate-200 mb-2">No hazards found</h3>
-          <p className="text-slate-400 max-w-sm mb-6">There are currently no hazards reported in the system.</p>
-        </div>
-      )}
+        ) : (
+          <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-[#9CA3AF]" />
+            </div>
+            <h3 className="text-xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">No hazards found</h3>
+            <p className="text-[#9CA3AF] max-w-sm mx-auto text-sm">There are currently no hazards reported in the system.</p>
+          </div>
+        )}
+      </div>
     </DashboardLayout>
   );
 }
