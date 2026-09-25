@@ -35,7 +35,7 @@ export function LandingPage() {
                See the road. <br />
                <span className="text-[#FFC629]">Understand the risk.</span>
              </h1>
-             <div className="absolute -top-12 -right-16 md:-top-20 md:-right-32 opacity-90 pointer-events-none hidden sm:block z-[-1]">
+             <div className="absolute -top-12 -right-24 md:-top-16 md:-right-48 lg:-top-24 lg:-right-60 opacity-90 pointer-events-none hidden sm:block">
                <ConeMascot waving size={220} />
              </div>
           </div>
