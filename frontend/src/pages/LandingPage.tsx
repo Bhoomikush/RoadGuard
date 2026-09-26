@@ -27,34 +27,44 @@ export function LandingPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#FFC629]/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #F3F4F6 0, #F3F4F6 2px, transparent 2px, transparent 15px)' }}></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-8 uppercase tracking-wide">RoadGuard AI v1.0 is live</div>
-          
-          <div className="relative inline-block">
-             <h1 className="text-5xl md:text-7xl font-extrabold text-[#F3F4F6] tracking-tight mb-8 leading-tight font-['Sora',sans-serif]">
-               See the road. <br />
-               <span className="text-[#FFC629]">Understand the risk.</span>
-             </h1>
-             <div className="absolute -top-12 -right-24 md:-top-16 md:-right-48 lg:-top-24 lg:-right-60 opacity-90 pointer-events-none hidden sm:block">
-               <ConeMascot waving size={220} />
-             </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8 text-center lg:text-left">
+          {/* Left Column: Text Content */}
+          <div className="flex-1 flex flex-col items-center lg:items-start max-w-3xl">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#FFC629] text-sm font-bold mb-8 uppercase tracking-wide">
+              RoadGuard AI v1.0 is live
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-extrabold text-[#F3F4F6] tracking-tight mb-8 leading-tight font-['Sora',sans-serif]">
+              See the road. <br />
+              <span className="text-[#FFC629]">Understand the risk.</span>
+            </h1>
+            
+            <p className="mt-4 text-xl text-[#9CA3AF] mb-10 leading-relaxed">
+              RoadGuard AI uses computer vision, machine learning, and community intelligence to detect road hazards and identify high-risk areas before accidents happen.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 relative z-20 w-full sm:w-auto">
+              <Link to="/report">
+                <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-[#FFC629] text-[#0E1013] font-bold text-lg shadow-[0_4px_14px_rgba(255,198,41,0.2)] hover:shadow-[0_6px_20px_rgba(255,198,41,0.4)] hover:scale-105 transition-all">
+                  Report a Hazard
+                </button>
+              </Link>
+              <Link to="/map">
+                <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-transparent border-2 border-[rgba(243,244,246,0.3)] text-[#F3F4F6] font-bold text-lg hover:border-[#F3F4F6] hover:bg-[#F3F4F6]/5 transition-all">
+                  Explore the Map
+                </button>
+              </Link>
+            </div>
           </div>
 
-          <p className="mt-4 text-xl text-[#9CA3AF] max-w-3xl mx-auto mb-10 leading-relaxed">
-            RoadGuard AI uses computer vision, machine learning, and community intelligence to detect road hazards and identify high-risk areas before accidents happen.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-20 w-full sm:w-auto">
-            <Link to="/report">
-              <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-[#FFC629] text-[#0E1013] font-bold text-lg shadow-[0_4px_14px_rgba(255,198,41,0.2)] hover:shadow-[0_6px_20px_rgba(255,198,41,0.4)] hover:scale-105 transition-all">
-                Report a Hazard
-              </button>
-            </Link>
-            <Link to="/map">
-              <button className="w-full sm:w-auto h-14 px-8 rounded-full bg-transparent border-2 border-[rgba(243,244,246,0.3)] text-[#F3F4F6] font-bold text-lg hover:border-[#F3F4F6] hover:bg-[#F3F4F6]/5 transition-all">
-                Explore the Map
-              </button>
-            </Link>
+          {/* Right Column: Mascot */}
+          <div className="flex-shrink-0 relative z-0 flex justify-center lg:justify-end lg:w-[400px]">
+            <div className="hidden lg:block">
+              <ConeMascot waving size={300} />
+            </div>
+            <div className="block lg:hidden mt-8">
+              <ConeMascot waving size={180} />
+            </div>
           </div>
         </div>
 

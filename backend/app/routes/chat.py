@@ -18,7 +18,7 @@ def chat_endpoint(request: ChatRequest, user_data = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Message cannot be empty or whitespace.")
     
     try:
-        reply = generate_rag_response(message)
+        reply = generate_rag_response(message, user_data)
         return ChatResponse(reply=reply)
     except Exception as e:
         # Handle errors gracefully without exposing stack traces to the client
