@@ -1,17 +1,16 @@
 import { Activity, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
-import type { RiskZone } from '../../types';
+import type { RiskZone } from '../../utils/geo';
 
 interface RiskCardProps {
   zone: RiskZone;
 }
 
 export function RiskCard({ zone }: RiskCardProps) {
-  const levelColors = {
-    critical: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
-    high: 'text-red-500 bg-red-500/10 border-red-500/20',
-    medium: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-    low: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
+  const levelColors: Record<string, string> = {
+    HIGH: 'text-red-500 bg-red-500/10 border-red-500/20',
+    MEDIUM: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+    LOW: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
   };
 
   return (
@@ -34,22 +33,21 @@ export function RiskCard({ zone }: RiskCardProps) {
         
         <div className="flex items-start gap-2 text-sm text-slate-400 mb-6">
           <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-slate-500" />
-          <p>{zone.location}</p>
+          <p>Lat: {zone.center.lat.toFixed(4)}, Lng: {zone.center.lng.toFixed(4)}</p>
         </div>
 
         <div>
           <div className="flex justify-between text-xs mb-2">
-            <span className="text-slate-500">Risk Intensity</span>
-            <span className="text-slate-300 font-medium">{Math.round(zone.intensity * 100)}%</span>
+            <span className="text-slate-500">Risk Intensity (Score)</span>
+            <span className="text-slate-300 font-medium">{Math.round(Math.min(zone.score / 10, 1) * 100)}% ({zone.score})</span>
           </div>
           <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
             <div 
               className={`h-full rounded-full ${
-                zone.level === 'critical' ? 'bg-rose-500' :
-                zone.level === 'high' ? 'bg-red-500' :
-                zone.level === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                zone.level === 'HIGH' ? 'bg-red-500' :
+                zone.level === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
               }`} 
-              style={{ width: `${zone.intensity * 100}%` }}
+              style={{ width: `${Math.min(zone.score / 10, 1) * 100}%` }}
             ></div>
           </div>
         </div>

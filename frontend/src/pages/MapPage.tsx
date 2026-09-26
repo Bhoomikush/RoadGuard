@@ -9,7 +9,7 @@ import type { Hazard } from '../types';
 
 import { supabase } from '../lib/supabase';
 import { calculateRiskZones, DEFAULT_MAP_CENTER } from '../utils/geo';
-import { getHazardTitle } from '../utils/hazard';
+import { getHazardTitle, HAZARD_STATUS } from '../utils/hazard';
 // Fix Leaflet's default icon path issues
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { Search, Navigation, AlertTriangle } from 'lucide-react';
@@ -78,7 +78,7 @@ export function MapPage() {
   }, []);
 
   const displayedHazards = useMemo(() => {
-    return hazards.filter(h => severityFilter === 'all' || h.severity === severityFilter);
+    return hazards.filter(h => (h.status as string) !== HAZARD_STATUS.RESOLVED && (severityFilter === 'all' || h.severity === severityFilter));
   }, [hazards, severityFilter]);
 
   // Calculate risk zones from the current hazards

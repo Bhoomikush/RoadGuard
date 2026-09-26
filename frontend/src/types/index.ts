@@ -14,17 +14,6 @@ export interface Hazard {
   createdAt: string;
 }
 
-export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
-
-export interface RiskZone {
-  id: string;
-  level: RiskLevel;
-  hazardCount: number;
-  location: string;
-  intensity: number; // 0 to 1
-  centerLat: number;
-  centerLng: number;
-}
 
 export interface ChatMessage {
   id: string;
