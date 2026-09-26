@@ -20,6 +20,7 @@ export function ReportPage() {
   const [mlError, setMlError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submitLockRef = useRef(false);
 
   const analyzeImage = async (selectedFile: File) => {
     setIsAnalyzing(true);
@@ -127,6 +128,12 @@ export function ReportPage() {
       setError('Please wait for AI analysis to complete successfully before submitting.');
       return;
     }
+    
+    if (submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
+    
     setIsSubmitting(true);
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -160,6 +167,7 @@ export function ReportPage() {
       const backendError = err.response?.data?.detail;
       setError(typeof backendError === 'string' ? backendError : JSON.stringify(backendError) || err.message || 'An error occurred while submitting the report.');
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   };

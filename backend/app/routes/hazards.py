@@ -78,7 +78,12 @@ async def create_hazard(hazard: HazardCreate, user_data = Depends(get_current_us
         
         return result.data[0]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # DB insert failed, clean up the orphaned image using the user's client
+        try:
+            req_supabase.storage.from_("hazard-images").remove([hazard.image_url])
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail="An internal error occurred while creating the hazard.")
 
 @router.get("")
 async def get_hazards(user_data = Depends(get_current_user)):
@@ -89,4 +94,4 @@ async def get_hazards(user_data = Depends(get_current_user)):
         result = req_supabase.table("hazards").select("*").order("created_at", desc=True).execute()
         return result.data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An internal error occurred while fetching hazards.")
