@@ -11,8 +11,8 @@ router = APIRouter(
 @router.post("/detect")
 async def detect_hazards(file: UploadFile = File(...), user_data = Depends(get_current_user)):
     # Check file extension or content type simply
-    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-        raise HTTPException(status_code=400, detail="Invalid image file format. Only PNG, JPG, and JPEG are supported.")
+    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+        raise HTTPException(status_code=400, detail="Invalid image file format. Only PNG, JPG, JPEG, and WEBP are supported.")
 
     try:
         contents = await file.read()

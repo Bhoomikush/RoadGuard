@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { calculateRiskZones } from '../utils/geo';
 import { FileText, AlertTriangle, CheckCircle, Activity, BarChart2 } from 'lucide-react';
 import type { Hazard } from '../types';
+import { getHazardTitle, HAZARD_STATUS, HAZARD_SEVERITY } from '../utils/hazard';
 
 export function AnalyticsPage() {
   const [hazards, setHazards] = useState<Hazard[]>([]);
@@ -22,8 +23,8 @@ export function AnalyticsPage() {
         
         const apiHazards: Hazard[] = (data || []).map((item: any) => ({
           id: item.id?.toString() || Math.random().toString(),
-          type: item.description || 'Unknown Hazard',
-          severity: item.severity || 'low',
+          type: getHazardTitle(item),
+          severity: item.severity || HAZARD_SEVERITY.LOW,
           status: item.status || 'pending',
           latitude: item.latitude,
           longitude: item.longitude,
@@ -60,9 +61,9 @@ export function AnalyticsPage() {
   // By Status
   const byStatus = { pending: 0, under_review: 0, in_progress: 0, resolved: 0 };
   hazards.forEach(h => {
-    const st = String(h.status || 'pending').toLowerCase();
-    if (st === 'under review' || st === 'under_review') byStatus.under_review++;
-    else if (st === 'in progress' || st === 'in_progress') byStatus.in_progress++;
+    const st = String(h.status || HAZARD_STATUS.PENDING).toLowerCase();
+    if (st === HAZARD_STATUS.UNDER_REVIEW || st === 'under review') byStatus.under_review++;
+    else if (st === HAZARD_STATUS.IN_PROGRESS || st === 'in progress') byStatus.in_progress++;
     else if (st in byStatus) byStatus[st as keyof typeof byStatus]++;
   });
 

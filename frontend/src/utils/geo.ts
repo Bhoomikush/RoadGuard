@@ -8,6 +8,8 @@ export interface RiskZone {
   hazardCount: number;
 }
 
+export const DEFAULT_MAP_CENTER: [number, number] = [23.1765, 75.7885];
+
 /**
  * Calculates the geographic distance between two points using the Haversine formula.
  * Returns distance in meters.

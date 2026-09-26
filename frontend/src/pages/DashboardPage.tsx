@@ -7,7 +7,8 @@ import { Badge } from '../components/ui/Badge';
 import { supabase } from '../lib/supabase';
 import type { Hazard } from '../types';
 import ConeMascot from '../components/ConeMascot';
-import { calculateRiskZones } from '../utils/geo';
+import { calculateRiskZones, DEFAULT_MAP_CENTER } from '../utils/geo';
+import { getHazardTitle, HAZARD_STATUS, HAZARD_SEVERITY } from '../utils/hazard';
 import type { RiskZone } from '../utils/geo';
 import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
 import { Icon } from 'leaflet';
@@ -89,20 +90,10 @@ export function DashboardPage() {
       if (recentError) throw recentError;
       
       const mapHazardData = (item: any): Hazard => {
-        let typeName = item.description || 'Reported Hazard';
-        
-        if (item.ai_detections && Array.isArray(item.ai_detections) && item.ai_detections.length > 0) {
-           const detection = item.ai_detections[0];
-           if (detection && detection.class_name) {
-             const capitalized = detection.class_name.charAt(0).toUpperCase() + detection.class_name.slice(1);
-             typeName = `${capitalized} detected`;
-           }
-        }
-        
         return {
           id: item.id?.toString() || Math.random().toString(),
-          type: typeName,
-          severity: item.severity || 'low',
+          type: getHazardTitle(item),
+          severity: item.severity || HAZARD_SEVERITY.LOW,
           status: item.status || 'pending',
           latitude: item.latitude,
           longitude: item.longitude,
@@ -125,8 +116,8 @@ export function DashboardPage() {
       if (statsError) throw statsError;
 
       const total = allData?.length || 0;
-      const highRisk = allData?.filter(h => h.severity === 'high').length || 0;
-      const resolved = allData?.filter(h => (h.status as string) === 'resolved').length || 0;
+      const highRisk = allData?.filter(h => h.severity === HAZARD_SEVERITY.HIGH).length || 0;
+      const resolved = allData?.filter(h => (h.status as string) === HAZARD_STATUS.RESOLVED).length || 0;
       const active = total - resolved;
       const aiPotholes = allData?.filter(h => h.ai_detections && Array.isArray(h.ai_detections) && h.ai_detections.some((d: any) => d.class_name === 'pothole')).length || 0;
       const aiCracks = allData?.filter(h => h.ai_detections && Array.isArray(h.ai_detections) && h.ai_detections.some((d: any) => d.class_name === 'crack')).length || 0;
@@ -164,17 +155,17 @@ export function DashboardPage() {
 
   const formatStatus = (status: string) => {
     switch (status) {
-      case 'pending': return 'Reported';
-      case 'under_review': return 'Under Review';
-      case 'in_progress': return 'In Progress';
-      case 'resolved': return 'Resolved';
+      case HAZARD_STATUS.PENDING: return 'Reported';
+      case HAZARD_STATUS.UNDER_REVIEW: return 'Under Review';
+      case HAZARD_STATUS.IN_PROGRESS: return 'In Progress';
+      case HAZARD_STATUS.RESOLVED: return 'Resolved';
       default: return status;
     }
   };
 
   const getStatusBadgeVariant = (status: string) => {
-    if (status === 'resolved') return 'success';
-    if (status === 'pending' || status === 'under_review' || status === 'in_progress') return 'danger';
+    if (status === HAZARD_STATUS.RESOLVED) return 'success';
+    if (status === HAZARD_STATUS.PENDING || status === HAZARD_STATUS.UNDER_REVIEW || status === HAZARD_STATUS.IN_PROGRESS) return 'danger';
     return 'default';
   };
 
@@ -327,7 +318,7 @@ export function DashboardPage() {
                 Retry
               </button>
             </div>
-          ) : riskZones.length === 0 && allHazards.filter(h => (h.status as string) !== 'resolved').length === 0 ? (
+          ) : riskZones.length === 0 && allHazards.filter(h => (h.status as string) !== HAZARD_STATUS.RESOLVED).length === 0 ? (
             <div className="flex flex-col items-center text-center p-4">
               <ConeMascot size={100} waving={false} title="No active risk zones" />
               <p className="text-sm text-[#9CA3AF] mt-2">No active risk zones yet</p>
@@ -335,7 +326,7 @@ export function DashboardPage() {
           ) : (
             <>
               <MapContainer
-                center={riskZones.length > 0 ? [riskZones[0].center.lat, riskZones[0].center.lng] : [allHazards[0]?.latitude || 0, allHazards[0]?.longitude || 0]}
+                center={riskZones.length > 0 ? [riskZones[0].center.lat, riskZones[0].center.lng] : (allHazards.length > 0 && allHazards[0].latitude && allHazards[0].longitude ? [allHazards[0].latitude, allHazards[0].longitude] : DEFAULT_MAP_CENTER)}
                 zoom={riskZones.length > 0 ? 14 : 12}
                 className="w-full h-full"
                 zoomControl={false}
@@ -361,8 +352,8 @@ export function DashboardPage() {
                     }}
                   />
                 ))}
-                {allHazards.filter(h => (h.status as string) !== 'resolved').map(hazard => {
-                   const icon = hazard.severity === 'high' ? icons.high : hazard.severity === 'medium' ? icons.medium : icons.low;
+                {allHazards.filter(h => (h.status as string) !== HAZARD_STATUS.RESOLVED).map(hazard => {
+                   const icon = hazard.severity === HAZARD_SEVERITY.HIGH ? icons.high : hazard.severity === HAZARD_SEVERITY.MEDIUM ? icons.medium : icons.low;
                    return (
                      <Marker 
                        key={hazard.id}

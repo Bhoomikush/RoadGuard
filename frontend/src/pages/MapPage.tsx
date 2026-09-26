@@ -8,7 +8,8 @@ import { HazardCard } from '../components/domain/HazardCard';
 import type { Hazard } from '../types';
 
 import { supabase } from '../lib/supabase';
-import { calculateRiskZones } from '../utils/geo';
+import { calculateRiskZones, DEFAULT_MAP_CENTER } from '../utils/geo';
+import { getHazardTitle } from '../utils/hazard';
 // Fix Leaflet's default icon path issues
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { Search, Navigation, AlertTriangle } from 'lucide-react';
@@ -55,7 +56,7 @@ export function MapPage() {
         
         const apiHazards: Hazard[] = (apiHazardsData || []).map((item: any) => ({
           id: item.id?.toString() || Math.random().toString(),
-          type: item.description || 'Unknown Hazard',
+          type: getHazardTitle(item),
           severity: item.severity || 'low',
           status: item.status || 'active',
           latitude: item.latitude,
@@ -83,7 +84,6 @@ export function MapPage() {
   // Calculate risk zones from the current hazards
   const zones = useMemo(() => calculateRiskZones(hazards), [hazards]);
 
-  const center: [number, number] = [23.1765, 75.7885]; // Ujjain, Madhya Pradesh, India
   
   const handleLocate = () => {
     if (mapRef.current && navigator.geolocation) {
@@ -156,7 +156,7 @@ export function MapPage() {
             </div>
 
             <MapContainer 
-              center={center} 
+              center={DEFAULT_MAP_CENTER} 
               zoom={13} 
               style={{ height: '100%', width: '100%', zIndex: 0 }}
               zoomControl={false}

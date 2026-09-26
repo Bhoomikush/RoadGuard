@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { MapPin, Clock, ArrowRight, Sparkles, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ConeMascot from '../components/ConeMascot';
+import { getHazardTitle, HAZARD_STATUS, HAZARD_SEVERITY } from '../utils/hazard';
 
 export function ReportsPage() {
   const [reports, setReports] = useState<Hazard[]>([]);
@@ -33,25 +34,10 @@ export function ReportsPage() {
         if (sbError) throw sbError;
         
         const apiHazards: Hazard[] = (apiHazardsData || []).map((item: any) => {
-          let hazardType = item.description || 'Reported Hazard';
-          
-          if (item.ai_detections && Array.isArray(item.ai_detections) && item.ai_detections.length > 0) {
-            const bestDetection = item.ai_detections.reduce((prev: any, current: any) => 
-              ((prev.confidence || 0) > (current.confidence || 0)) ? prev : current
-            );
-            
-            if (bestDetection && bestDetection.class_name) {
-              const name = bestDetection.class_name.toLowerCase();
-              if (name === 'pothole') hazardType = 'Pothole detected';
-              else if (name === 'crack') hazardType = 'Crack detected';
-              else hazardType = `${name.charAt(0).toUpperCase() + name.slice(1)} detected`;
-            }
-          }
-
           return {
             id: item.id?.toString() || Math.random().toString(),
-            type: hazardType,
-            severity: item.severity || 'low',
+            type: getHazardTitle(item),
+            severity: item.severity || HAZARD_SEVERITY.LOW,
             status: item.status || 'pending',
             latitude: item.latitude,
             longitude: item.longitude,
@@ -98,10 +84,10 @@ export function ReportsPage() {
 
   const filteredReports = reports.filter(r => {
     if (filter === 'All') return true;
-    if (filter === 'Reported' && (r.status as string) === 'pending') return true;
-    if (filter === 'Under Review' && (r.status as string) === 'under_review') return true;
-    if (filter === 'In Progress' && (r.status as string) === 'in_progress') return true;
-    if (filter === 'Resolved' && (r.status as string) === 'resolved') return true;
+    if (filter === 'Reported' && (r.status as string) === HAZARD_STATUS.PENDING) return true;
+    if (filter === 'Under Review' && (r.status as string) === HAZARD_STATUS.UNDER_REVIEW) return true;
+    if (filter === 'In Progress' && (r.status as string) === HAZARD_STATUS.IN_PROGRESS) return true;
+    if (filter === 'Resolved' && (r.status as string) === HAZARD_STATUS.RESOLVED) return true;
     return false;
   });
 

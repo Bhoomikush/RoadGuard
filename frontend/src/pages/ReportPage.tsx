@@ -17,8 +17,33 @@ export function ReportPage() {
   const [success, setSuccess] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [mlResult, setMlResult] = useState<any>(null);
+  const [mlError, setMlError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const analyzeImage = async (selectedFile: File) => {
+    setIsAnalyzing(true);
+    setMlResult(null);
+    setMlError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      const response = await axios.post(`${backendUrl}/api/ml/detect`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+        }
+      });
+      setMlResult(response.data);
+    } catch (err: any) {
+      console.error('ML detection error:', err);
+      setMlError(err.response?.data?.detail || 'AI analysis failed. Please try again or use a different image.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleFileSelect = async (selectedFile: File) => {
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -36,29 +61,12 @@ export function ReportPage() {
     }
     
     setError('');
+    setMlError('');
     setFile(selectedFile);
     const url = URL.createObjectURL(selectedFile);
     setPreview(url);
     
-    setIsAnalyzing(true);
-    setMlResult(null);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      const response = await axios.post(`${backendUrl}/api/ml/detect`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
-        }
-      });
-      setMlResult(response.data);
-    } catch (err: any) {
-      console.error('ML detection error:', err);
-    } finally {
-      setIsAnalyzing(false);
-    }
+    await analyzeImage(selectedFile);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -81,6 +89,7 @@ export function ReportPage() {
     if (preview) URL.revokeObjectURL(preview);
     setPreview(null);
     setMlResult(null);
+    setMlError('');
   };
 
   const handleGetLocation = () => {
@@ -112,6 +121,10 @@ export function ReportPage() {
     }
     if (!location) {
       setError('Please provide a location before submitting.');
+      return;
+    }
+    if (isAnalyzing || mlError || !mlResult) {
+      setError('Please wait for AI analysis to complete successfully before submitting.');
       return;
     }
     setIsSubmitting(true);
@@ -216,13 +229,24 @@ export function ReportPage() {
                 </div>
               </section>
 
-              {(isAnalyzing || mlResult) && (
+              {(isAnalyzing || mlResult || mlError) && (
                 <section className="bg-[#161A20] rounded-[24px] border border-[rgba(255,255,255,0.08)] p-6 shadow-lg shadow-[#FFC629]/5">
                   <h3 className="text-lg font-semibold text-[#F3F4F6] font-['Sora',sans-serif] mb-4">AI Detection Results</h3>
                   {isAnalyzing ? (
                     <div className="flex items-center gap-3 p-4 bg-[#0E1013] rounded-[16px] border border-[rgba(255,255,255,0.08)]">
                       <Loader2 className="w-5 h-5 animate-spin text-[#FFC629]" />
                       <p className="text-[#F3F4F6]">Analyzing image...</p>
+                    </div>
+                  ) : mlError ? (
+                    <div className="p-4 bg-[#EF4444]/10 rounded-[16px] border border-[#EF4444]/20 text-center">
+                      <p className="text-[#EF4444] mb-3">{mlError}</p>
+                      <button 
+                        onClick={() => file && analyzeImage(file)}
+                        className="px-4 py-2 bg-[#EF4444] text-[#F3F4F6] text-sm font-bold rounded-full hover:opacity-90 transition-opacity"
+                        type="button"
+                      >
+                        Retry AI Analysis
+                      </button>
                     </div>
                   ) : mlResult?.total_detections === 0 ? (
                     <div className="p-4 bg-[#0E1013] rounded-[16px] border border-[rgba(255,255,255,0.08)] text-center">
@@ -317,7 +341,7 @@ export function ReportPage() {
                 <button 
                   className="w-full h-14 inline-flex items-center justify-center bg-[#FFC629] text-[#0E1013] rounded-[16px] font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !file || !location}
+                  disabled={isSubmitting || !file || !location || isAnalyzing || !!mlError || !mlResult}
                 >
                   {isSubmitting ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Send className="w-5 h-5 mr-2" />}
                   {isSubmitting ? 'Submitting report...' : 'Submit Hazard Report'}
