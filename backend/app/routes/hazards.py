@@ -91,7 +91,7 @@ async def get_hazards(user_data = Depends(get_current_user)):
     req_supabase = create_client(url, key, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
     try:
         # Fetch hazards ordered by newest first
-        result = req_supabase.table("hazards").select("*").order("created_at", desc=True).execute()
+        result = req_supabase.table("hazards").select("id, image_url, latitude, longitude, description, status, severity, ai_detections, created_at").order("created_at", desc=True).execute()
         return result.data
     except Exception as e:
         raise HTTPException(status_code=500, detail="An internal error occurred while fetching hazards.")
