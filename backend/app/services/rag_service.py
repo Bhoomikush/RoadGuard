@@ -27,6 +27,7 @@ def generate_rag_response(question: str, user_data: dict) -> str:
     
     client = genai.Client(api_key=api_key)
     token = user_data["token"]
+
     user = user_data["user"]
     req_supabase = create_client(url, key, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
 
@@ -141,7 +142,8 @@ def generate_rag_response(question: str, user_data: dict) -> str:
         # Get query embedding
         emb_res = client.models.embed_content(
             model='gemini-embedding-2',
-            contents=question
+            contents=question,
+            config={'output_dimensionality': 768}
         )
         query_embedding = emb_res.embeddings[0].values
         

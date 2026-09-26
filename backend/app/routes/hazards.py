@@ -35,6 +35,7 @@ async def get_current_user(authorization: str = Header(None)):
     token = authorization.split(" ")[1]
     
     try:
+
         # Use get_user to validate the token
         res = supabase.auth.get_user(token)
         if not res.user:

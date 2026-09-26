@@ -22,7 +22,8 @@ KNOWLEDGE_FILE_PATH = os.path.join(os.path.dirname(__file__), 'road_rules.md')
 def get_embedding(text: str):
     response = client.models.embed_content(
         model='gemini-embedding-2',
-        contents=text
+        contents=text,
+        config={'output_dimensionality': 768}
     )
     return response.embeddings[0].values
 
