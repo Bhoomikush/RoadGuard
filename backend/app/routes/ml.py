@@ -10,14 +10,23 @@ router = APIRouter(
 
 @router.post("/detect")
 async def detect_hazards(file: UploadFile = File(...), user_data = Depends(get_current_user)):
-    # Check file extension or content type simply
-    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-        raise HTTPException(status_code=400, detail="Invalid image file format. Only PNG, JPG, JPEG, and WEBP are supported.")
+    allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_mime_types:
+        raise HTTPException(status_code=400, detail="Invalid content type. Only JPEG, PNG, and WEBP are supported.")
 
+    MAX_FILE_SIZE = 10 * 1024 * 1024 # 10 MB
+    
     try:
-        contents = await file.read()
-        results = predict_image(contents)
+        contents = bytearray()
+        while chunk := await file.read(1024 * 1024):
+            contents.extend(chunk)
+            if len(contents) > MAX_FILE_SIZE:
+                raise HTTPException(status_code=400, detail="File size exceeds the 10 MB limit.")
+        
+        results = predict_image(bytes(contents))
         return JSONResponse(content=results)
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

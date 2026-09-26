@@ -3,8 +3,9 @@ from io import BytesIO
 from PIL import Image
 from ultralytics import YOLO
 
-# Absolute path based on the project structure
-MODEL_PATH = r"D:\RoadGuard\ml\models\best.pt"
+# Path based on the project structure
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+MODEL_PATH = os.path.join(BASE_DIR, "ml", "models", "best.pt")
 
 # Load the model only once upon module initialization
 try:
@@ -33,7 +34,7 @@ def predict_image(image_bytes: bytes):
         raise ValueError("Invalid image file.")
 
     # Run inference
-    results = model(image)
+    results = model(image, imgsz=640, conf=0.25)
     
     detections = []
     
