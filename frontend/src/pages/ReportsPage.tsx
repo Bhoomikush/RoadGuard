@@ -14,6 +14,31 @@ export function ReportsPage() {
   const [filter, setFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [complaintStates, setComplaintStates] = useState<Record<string, { loading: boolean, error: string | null, data: any | null }>>({});
+
+  const generateComplaint = async (hazardId: string) => {
+    setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: true, error: null, data: null } }));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not logged in");
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/complaints/generate/${hazardId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to generate complaint");
+      }
+      
+      setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: false, error: null, data } }));
+    } catch (err: any) {
+      setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: false, error: err.message || "An error occurred", data: null } }));
+    }
+  };
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -189,6 +214,29 @@ export function ReportsPage() {
                           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)]">
                             <Sparkles className="w-3 h-3 text-[#FFC629]" />
                             <span className="text-xs font-medium text-[#F3F4F6]">AI detected • {confidence}% confidence</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="pt-4 border-t border-[rgba(255,255,255,0.08)] mt-4">
+                        {!complaintStates[report.id]?.data ? (
+                          <button
+                            onClick={() => generateComplaint(report.id)}
+                            disabled={complaintStates[report.id]?.loading}
+                            className="text-sm font-medium h-9 px-4 rounded-full bg-[rgba(255,255,255,0.05)] text-[#F3F4F6] hover:bg-[rgba(255,255,255,0.1)] transition-colors disabled:opacity-50"
+                          >
+                            {complaintStates[report.id]?.loading ? 'Generating...' : 'Generate Official Complaint'}
+                          </button>
+                        ) : (
+                          <div className="bg-[#0E1013] p-4 rounded-xl border border-[rgba(255,255,255,0.05)]">
+                            <h4 className="text-sm font-bold text-[#F3F4F6] mb-1">Generated Complaint: {complaintStates[report.id].data.subject}</h4>
+                            <p className="text-[#9CA3AF] text-sm whitespace-pre-wrap">{complaintStates[report.id].data.body}</p>
+                            <div className="mt-2 text-xs font-medium text-[#FFC629]">Status: {complaintStates[report.id].data.status}</div>
+                          </div>
+                        )}
+                        {complaintStates[report.id]?.error && (
+                          <div className="mt-2 text-sm text-[#EF4444]">
+                            {complaintStates[report.id].error}
                           </div>
                         )}
                       </div>

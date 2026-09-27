@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
+from ..dependencies import get_current_user
 from pydantic import BaseModel
 from typing import Optional
 from supabase import create_client, Client, ClientOptions
@@ -28,21 +29,7 @@ class HazardCreate(BaseModel):
     ai_detections: Optional[list] = None
     severity: Optional[str] = None
 
-async def get_current_user(authorization: str = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
-    
-    token = authorization.split(" ")[1]
-    
-    try:
 
-        # Use get_user to validate the token
-        res = supabase.auth.get_user(token)
-        if not res.user:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return {"user": res.user, "token": token}
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 @router.post("")
 async def create_hazard(hazard: HazardCreate, user_data = Depends(get_current_user)):
