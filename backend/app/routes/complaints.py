@@ -3,7 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import create_client, ClientOptions
 from ..dependencies import get_current_user
 from ..services.complaints_service import generate_official_complaint
+from ..services.email_service import send_complaint_email
 import logging
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +103,64 @@ async def generate_complaint(hazard_id: str, user_data = Depends(get_current_use
             raise HTTPException(status_code=500, detail=str(e))
         
         raise HTTPException(status_code=500, detail="An internal error occurred while generating the complaint.")
+
+@router.post("/{complaint_id}/send")
+async def send_complaint(complaint_id: str, user_data = Depends(get_current_user)):
+    user = user_data["user"]
+    token = user_data["token"]
+    
+    req_supabase = create_client(url, key, options=ClientOptions(headers={"Authorization": f"Bearer {token}"}))
+    
+    try:
+        # Fetch the complaint
+        complaint_res = req_supabase.table("complaints").select("*").eq("id", complaint_id).execute()
+        if not complaint_res.data or len(complaint_res.data) == 0:
+            raise HTTPException(status_code=404, detail="Complaint not found")
+        
+        complaint = complaint_res.data[0]
+        
+        if str(complaint.get("user_id")) != str(user.id):
+            raise HTTPException(status_code=403, detail="Not authorized")
+            
+        if complaint.get("email_status") == "sent":
+            raise HTTPException(status_code=400, detail="Complaint has already been sent")
+            
+        subject = complaint.get("subject")
+        body = complaint.get("body")
+        
+        if not subject or not body:
+            raise HTTPException(status_code=400, detail="Complaint is missing subject or body")
+            
+        try:
+            # Send the email
+            send_complaint_email(subject, body)
+            
+            # Update success
+            update_data = {
+                "email_status": "sent",
+                "sent_at": datetime.now(timezone.utc).isoformat(),
+                "error_message": None
+            }
+            req_supabase.table("complaints").update(update_data).eq("id", complaint_id).execute()
+            
+            return {"message": "Email sent successfully", "status": "sent"}
+            
+        except Exception as e:
+            # Update failure
+            error_message = str(e)
+            update_data = {
+                "email_status": "failed",
+                "error_message": error_message
+            }
+            try:
+                req_supabase.table("complaints").update(update_data).eq("id", complaint_id).execute()
+            except Exception as db_e:
+                logger.error(f"Failed to save email failure status to DB: {str(db_e)}")
+                
+            raise HTTPException(status_code=500, detail="Failed to send complaint email.")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending complaint {complaint_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="An internal error occurred while processing the request.")

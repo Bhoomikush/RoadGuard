@@ -16,6 +16,8 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [complaintStates, setComplaintStates] = useState<Record<string, { loading: boolean, error: string | null, data: any | null }>>({});
 
+  const [sendStates, setSendStates] = useState<Record<string, { loading: boolean, error: string | null }>>({});
+
   const generateComplaint = async (hazardId: string) => {
     setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: true, error: null, data: null } }));
     try {
@@ -37,6 +39,50 @@ export function ReportsPage() {
       setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: false, error: null, data } }));
     } catch (err: any) {
       setComplaintStates(prev => ({ ...prev, [hazardId]: { loading: false, error: err.message || "An error occurred", data: null } }));
+    }
+  };
+
+  const sendComplaintEmail = async (hazardId: string, complaintId: string) => {
+    setSendStates(prev => ({ ...prev, [hazardId]: { loading: true, error: null } }));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not logged in");
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/complaints/${complaintId}/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.detail || "Failed to send complaint");
+      }
+      
+      setComplaintStates(prev => ({
+        ...prev,
+        [hazardId]: {
+          ...prev[hazardId],
+          data: {
+            ...prev[hazardId].data,
+            email_status: 'sent'
+          }
+        }
+      }));
+      setSendStates(prev => ({ ...prev, [hazardId]: { loading: false, error: null } }));
+    } catch (err: any) {
+      setSendStates(prev => ({ ...prev, [hazardId]: { loading: false, error: err.message || "Failed to send email" } }));
+      setComplaintStates(prev => ({
+        ...prev,
+        [hazardId]: {
+          ...prev[hazardId],
+          data: {
+            ...prev[hazardId].data,
+            email_status: 'failed'
+          }
+        }
+      }));
     }
   };
 
@@ -231,7 +277,44 @@ export function ReportsPage() {
                           <div className="bg-[#0E1013] p-4 rounded-xl border border-[rgba(255,255,255,0.05)]">
                             <h4 className="text-sm font-bold text-[#F3F4F6] mb-1">Generated Complaint: {complaintStates[report.id].data.subject}</h4>
                             <p className="text-[#9CA3AF] text-sm whitespace-pre-wrap">{complaintStates[report.id].data.body}</p>
-                            <div className="mt-2 text-xs font-medium text-[#FFC629]">Status: {complaintStates[report.id].data.status}</div>
+                            <div className="mt-4 flex flex-col gap-3">
+                              <div className="flex justify-between items-center text-xs font-medium">
+                                <span className="text-[#9CA3AF]">Status: <span className="text-[#FFC629]">{complaintStates[report.id].data.status}</span></span>
+                                {complaintStates[report.id].data.email_status && (
+                                  <span className="text-[#9CA3AF]">
+                                    Email: <span className={
+                                      complaintStates[report.id].data.email_status === 'sent' ? 'text-[#10B981]' : 
+                                      complaintStates[report.id].data.email_status === 'failed' ? 'text-[#EF4444]' : 'text-[#FFC629]'
+                                    }>{
+                                      complaintStates[report.id].data.email_status === 'sent' ? 'Sent' : 
+                                      complaintStates[report.id].data.email_status === 'failed' ? 'Failed' : 'Pending'
+                                    }</span>
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {complaintStates[report.id].data.email_status !== 'sent' && (
+                                <button
+                                  onClick={() => sendComplaintEmail(report.id, complaintStates[report.id].data.id)}
+                                  disabled={sendStates[report.id]?.loading}
+                                  className="text-sm font-medium h-9 px-4 rounded-full bg-[#FFC629] text-[#0E1013] hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                                >
+                                  {sendStates[report.id]?.loading ? 'Sending...' : 'Send Official Complaint'}
+                                </button>
+                              )}
+                              
+                              {complaintStates[report.id].data.email_status === 'sent' && (
+                                <div className="text-sm font-medium text-[#10B981] flex items-center gap-2 bg-[#10B981]/10 px-3 py-2 rounded-lg">
+                                  Official complaint sent successfully
+                                </div>
+                              )}
+                              
+                              {sendStates[report.id]?.error && complaintStates[report.id].data.email_status !== 'sent' && (
+                                <div className="text-sm text-[#EF4444] bg-[#EF4444]/10 px-3 py-2 rounded-lg">
+                                  {sendStates[report.id].error}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                         {complaintStates[report.id]?.error && (
@@ -242,6 +325,7 @@ export function ReportsPage() {
                       </div>
                     </div>
                   </div>
+
                   
                   {report.imageUrl && (
                     <div className="shrink-0 sm:w-[280px] h-[220px] sm:h-auto w-full border-t sm:border-t-0 sm:border-l border-[rgba(255,255,255,0.08)] overflow-hidden bg-[#0E1013] relative">

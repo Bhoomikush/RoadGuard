@@ -50,6 +50,15 @@ CREATE POLICY "Users can view their own complaints"
     FOR SELECT
     USING (auth.uid() = user_id);
 
+-- Policy: Users can update their own complaints
+DROP POLICY IF EXISTS "Users can update their own complaints" ON public.complaints;
+CREATE POLICY "Users can update their own complaints"
+    ON public.complaints
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
 -- Policy: Users can create complaints for their own hazards
 DROP POLICY IF EXISTS "Users can create complaints for their own hazards" ON public.complaints;
 CREATE POLICY "Users can create complaints for their own hazards"
