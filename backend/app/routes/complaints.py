@@ -135,25 +135,22 @@ async def send_complaint(complaint_id: str, user_data = Depends(get_current_user
             # Send the email
             send_complaint_email(subject, body)
             
-            # Update success
-            update_data = {
-                "email_status": "sent",
-                "sent_at": datetime.now(timezone.utc).isoformat(),
-                "error_message": None
-            }
-            req_supabase.table("complaints").update(update_data).eq("id", complaint_id).execute()
+            # Update success via secure RPC
+            req_supabase.rpc("mark_complaint_email_sent", {
+                "p_complaint_id": complaint_id,
+                "p_sent_at": datetime.now(timezone.utc).isoformat()
+            }).execute()
             
             return {"message": "Email sent successfully", "status": "sent"}
             
         except Exception as e:
-            # Update failure
+            # Update failure via secure RPC
             error_message = str(e)
-            update_data = {
-                "email_status": "failed",
-                "error_message": error_message
-            }
             try:
-                req_supabase.table("complaints").update(update_data).eq("id", complaint_id).execute()
+                req_supabase.rpc("mark_complaint_email_failed", {
+                    "p_complaint_id": complaint_id,
+                    "p_error_message": error_message
+                }).execute()
             except Exception as db_e:
                 logger.error(f"Failed to save email failure status to DB: {str(db_e)}")
                 

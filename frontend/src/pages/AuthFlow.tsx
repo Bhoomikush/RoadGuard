@@ -19,6 +19,7 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
     setLoading(true);
 
     try {
@@ -65,9 +67,37 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
     }
   };
 
+  const handleResetPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+    if (!email) {
+      setError("Please enter your email address first to reset your password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setMessage("Password reset instructions sent to your email!");
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
-      await supabase.auth.signInWithOAuth({ provider: 'google' });
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       setError(err.message || 'Google authentication failed');
     }
@@ -267,6 +297,11 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
                 {error}
               </div>
             )}
+            {message && (
+              <div className="p-3 bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-sm rounded-xl">
+                {message}
+              </div>
+            )}
             
             {authTab === 'register' && (
               <div className="space-y-1.5">
@@ -328,9 +363,9 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
 
             {authTab === 'login' && (
               <div className="flex justify-end pt-1">
-                <a href="#" className="text-[13px] font-medium text-signal hover:text-[#e5b224] focus:outline-none focus:underline">
+                <button type="button" onClick={handleResetPassword} className="text-[13px] font-medium text-signal hover:text-[#e5b224] focus:outline-none focus:underline">
                   Forgot password?
-                </a>
+                </button>
               </div>
             )}
 

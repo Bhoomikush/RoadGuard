@@ -10,6 +10,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
   // On mobile, show welcome screen first by default
@@ -28,6 +29,7 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -40,9 +42,37 @@ export function LoginPage() {
     }
   };
 
+  const handleResetPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+    if (!email) {
+      setError("Please enter your email address first to reset your password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setMessage("Password reset instructions sent to your email!");
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
-      await supabase.auth.signInWithOAuth({ provider: 'google' });
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       setError(err.message || 'Google authentication failed');
     }
@@ -179,6 +209,11 @@ export function LoginPage() {
                   {error}
                 </div>
               )}
+              {message && (
+                <div className="p-3 bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-sm rounded-xl">
+                  {message}
+                </div>
+              )}
               <div className="space-y-1.5">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -227,7 +262,7 @@ export function LoginPage() {
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-[#9CA3AF]">Remember me</label>
                 </div>
-                <a href="#" className="text-[13px] font-bold text-[#FFC629] hover:opacity-80">Forgot password?</a>
+                <button type="button" onClick={handleResetPassword} className="text-[13px] font-bold text-[#FFC629] hover:opacity-80">Forgot password?</button>
               </div>
 
               <button

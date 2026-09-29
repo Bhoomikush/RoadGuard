@@ -104,6 +104,25 @@ export function ReportsPage() {
           
         if (sbError) throw sbError;
         
+        const { data: apiComplaintsData, error: compError } = await supabase
+          .from('complaints')
+          .select('*')
+          .eq('user_id', session.user.id);
+          
+        if (compError) console.error("Failed to fetch complaints", compError);
+        
+        const initialComplaintStates: Record<string, any> = {};
+        if (apiComplaintsData) {
+          apiComplaintsData.forEach((c: any) => {
+            initialComplaintStates[c.hazard_id] = {
+              loading: false,
+              error: null,
+              data: c
+            };
+          });
+        }
+        setComplaintStates(initialComplaintStates);
+        
         const apiHazards: Hazard[] = (apiHazardsData || []).map((item: any) => {
           return {
             id: item.id?.toString() || Math.random().toString(),
@@ -278,18 +297,36 @@ export function ReportsPage() {
                             <h4 className="text-sm font-bold text-[#F3F4F6] mb-1">Generated Complaint: {complaintStates[report.id].data.subject}</h4>
                             <p className="text-[#9CA3AF] text-sm whitespace-pre-wrap">{complaintStates[report.id].data.body}</p>
                             <div className="mt-4 flex flex-col gap-3">
-                              <div className="flex justify-between items-center text-xs font-medium">
-                                <span className="text-[#9CA3AF]">Status: <span className="text-[#FFC629]">{complaintStates[report.id].data.status}</span></span>
-                                {complaintStates[report.id].data.email_status && (
-                                  <span className="text-[#9CA3AF]">
-                                    Email: <span className={
-                                      complaintStates[report.id].data.email_status === 'sent' ? 'text-[#10B981]' : 
-                                      complaintStates[report.id].data.email_status === 'failed' ? 'text-[#EF4444]' : 'text-[#FFC629]'
-                                    }>{
-                                      complaintStates[report.id].data.email_status === 'sent' ? 'Sent' : 
-                                      complaintStates[report.id].data.email_status === 'failed' ? 'Failed' : 'Pending'
-                                    }</span>
+                              <div className="grid grid-cols-2 gap-2 text-xs font-medium">
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[#9CA3AF]">Status:</span>
+                                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)] text-[#F3F4F6] w-fit">
+                                    {complaintStates[report.id].data.status.replace('_', ' ')}
                                   </span>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[#9CA3AF]">Email Status:</span>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-md border w-fit ${
+                                    complaintStates[report.id].data.email_status === 'sent' ? 'bg-[#10B981]/10 border-[#10B981]/20 text-[#10B981]' : 
+                                    complaintStates[report.id].data.email_status === 'failed' ? 'bg-[#EF4444]/10 border-[#EF4444]/20 text-[#EF4444]' : 'bg-[#FFC629]/10 border-[#FFC629]/20 text-[#FFC629]'
+                                  }`}>
+                                    {complaintStates[report.id].data.email_status === 'sent' ? 'Sent' : 
+                                     complaintStates[report.id].data.email_status === 'failed' ? 'Failed' : 'Pending'}
+                                  </span>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[#9CA3AF]">Authority Email:</span>
+                                  <span className="text-[#F3F4F6]">{complaintStates[report.id].data.authority_email || 'N/A'}</span>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[#9CA3AF]">Created:</span>
+                                  <span className="text-[#F3F4F6]">{new Date(complaintStates[report.id].data.created_at).toLocaleDateString()}</span>
+                                </div>
+                                {complaintStates[report.id].data.sent_at && (
+                                  <div className="flex flex-col gap-1 col-span-2">
+                                    <span className="text-[#9CA3AF]">Sent On:</span>
+                                    <span className="text-[#F3F4F6]">{new Date(complaintStates[report.id].data.sent_at).toLocaleString()}</span>
+                                  </div>
                                 )}
                               </div>
                               

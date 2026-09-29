@@ -107,3 +107,57 @@ CREATE TRIGGER complaints_updated_at_trigger
     BEFORE UPDATE ON public.complaints
     FOR EACH ROW
     EXECUTE FUNCTION public.set_complaints_updated_at();
+
+-- 7. Trigger to prevent normal users from modifying restricted columns
+CREATE OR REPLACE FUNCTION public.check_complaint_update_permissions()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- If the user is an authority, allow all updates
+    IF public.is_authority(auth.uid()) THEN
+        RETURN NEW;
+    END IF;
+
+    -- For normal users, prevent modification of specific columns
+    IF OLD.status IS DISTINCT FROM NEW.status THEN
+        RAISE EXCEPTION 'Not authorized to modify status';
+    END IF;
+    
+    IF OLD.authority_email IS DISTINCT FROM NEW.authority_email THEN
+        RAISE EXCEPTION 'Not authorized to modify authority_email';
+    END IF;
+    
+    IF OLD.subject IS DISTINCT FROM NEW.subject THEN
+        RAISE EXCEPTION 'Not authorized to modify subject';
+    END IF;
+    
+    IF OLD.body IS DISTINCT FROM NEW.body THEN
+        RAISE EXCEPTION 'Not authorized to modify body';
+    END IF;
+    
+    IF OLD.provider IS DISTINCT FROM NEW.provider THEN
+        RAISE EXCEPTION 'Not authorized to modify provider';
+    END IF;
+    
+    IF OLD.hazard_id IS DISTINCT FROM NEW.hazard_id THEN
+        RAISE EXCEPTION 'Not authorized to modify hazard_id';
+    END IF;
+    
+    IF OLD.user_id IS DISTINCT FROM NEW.user_id THEN
+        RAISE EXCEPTION 'Not authorized to modify user_id';
+    END IF;
+
+    -- Allowed columns for normal users (e.g. via backend email flow):
+    -- email_status, sent_at, error_message
+
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS complaints_update_permissions_trigger ON public.complaints;
+CREATE TRIGGER complaints_update_permissions_trigger
+    BEFORE UPDATE ON public.complaints
+    FOR EACH ROW
+    EXECUTE FUNCTION public.check_complaint_update_permissions();
