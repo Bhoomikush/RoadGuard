@@ -104,7 +104,7 @@ export function MapPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)] min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)] min-h-[400px] md:min-h-[600px]">
           {/* Map Container Wrapper */}
           <div className="lg:col-span-3 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] overflow-hidden relative shadow-inner h-full flex flex-col">
             
@@ -163,8 +163,8 @@ export function MapPage() {
               ref={mapRef}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
               />
               
               {/* Render Risk Zones */}

@@ -55,6 +55,7 @@ export function AuthFlow({ initialTab }: { initialTab: AuthTab }) {
           password,
           options: {
             data: { name },
+            emailRedirectTo: `${window.location.origin}/dashboard`
           },
         });
         if (signUpError) throw signUpError;

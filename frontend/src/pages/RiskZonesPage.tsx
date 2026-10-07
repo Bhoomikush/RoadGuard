@@ -60,7 +60,7 @@ export function RiskZonesPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+        <div className="lg:col-span-1 space-y-4 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center p-8">
               <Loader2 className="w-8 h-8 text-[#FFC629] animate-spin mb-4" />
@@ -83,7 +83,7 @@ export function RiskZonesPage() {
         </div>
         
         <div className="lg:col-span-2">
-          <div className="w-full h-full min-h-[600px] bg-[#161A20] rounded-xl border border-[rgba(255,255,255,0.08)] relative overflow-hidden flex flex-col shadow-inner">
+          <div className="w-full h-full min-h-[400px] lg:min-h-[600px] bg-[#161A20] rounded-xl border border-[rgba(255,255,255,0.08)] relative overflow-hidden flex flex-col shadow-inner">
             {isLoading ? (
                <div className="flex flex-col items-center justify-center h-full">
                  <Loader2 className="w-8 h-8 animate-spin text-[#FFC629] mb-2" />

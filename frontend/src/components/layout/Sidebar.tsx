@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { 
   Shield, 
   LayoutDashboard, 
@@ -8,15 +9,39 @@ import {
   Activity, 
   Bot, 
   Settings, 
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && onClose) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEsc);
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, onClose]);
   
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -49,13 +74,34 @@ export function Sidebar() {
   const initials = getInitials(user?.user_metadata?.name, user?.email || '');
 
   return (
-    <aside className="w-64 bg-[#0E1013] border-r border-[rgba(255,255,255,0.08)] flex flex-col h-screen sticky top-0 font-['Inter']">
-      <div className="h-16 flex items-center px-6 border-b border-[rgba(255,255,255,0.08)]">
-        <Link to="/" className="flex items-center gap-2">
-          <Shield className="w-8 h-8 text-[#FFC629]" />
-          <span className="text-xl font-bold text-[#F3F4F6] tracking-tight font-['Sora',sans-serif]">RoadGuard</span>
-        </Link>
-      </div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`
+        fixed lg:sticky top-0 left-0 z-50 h-[100dvh] w-[280px] lg:w-64 flex-col bg-[#0E1013] border-r border-[rgba(255,255,255,0.08)] font-['Inter'] transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        flex
+      `}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-[rgba(255,255,255,0.08)] shrink-0">
+          <Link to="/" className="flex items-center gap-2" onClick={onClose}>
+            <Shield className="w-8 h-8 text-[#FFC629]" />
+            <span className="text-xl font-bold text-[#F3F4F6] tracking-tight font-['Sora',sans-serif]">RoadGuard</span>
+          </Link>
+          <button 
+            onClick={onClose} 
+            className="lg:hidden p-1 -mr-2 text-[#9CA3AF] hover:text-[#F3F4F6] focus:outline-none"
+            aria-label="Close sidebar"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4">
         <div className="space-y-1">
@@ -65,6 +111,7 @@ export function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={onClose}
                 className={`relative flex items-center px-3 py-3 rounded-lg text-[15px] font-medium transition-colors ${
                   isActive 
                     ? 'bg-[#FFC629]/10 text-[#FFC629]' 
@@ -84,7 +131,7 @@ export function Sidebar() {
 
       <div className="p-4 border-t border-[rgba(255,255,255,0.08)]">
         <div className="space-y-1 mb-4">
-          <Link to="/settings" className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors">
+          <Link to="/settings" onClick={onClose} className="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors">
             <Settings className="w-5 h-5 mr-3 text-[#9CA3AF]" />
             Settings
           </Link>
@@ -109,6 +156,7 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 

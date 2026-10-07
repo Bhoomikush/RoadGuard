@@ -183,7 +183,7 @@ export function ReportsPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 sm:pb-8">
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">My Reports</h1>
@@ -297,7 +297,7 @@ export function ReportsPage() {
                             <h4 className="text-sm font-bold text-[#F3F4F6] mb-1">Generated Complaint: {complaintStates[report.id].data.subject}</h4>
                             <p className="text-[#9CA3AF] text-sm whitespace-pre-wrap">{complaintStates[report.id].data.body}</p>
                             <div className="mt-4 flex flex-col gap-3">
-                              <div className="grid grid-cols-2 gap-2 text-xs font-medium">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium break-words">
                                 <div className="flex flex-col gap-1">
                                   <span className="text-[#9CA3AF]">Status:</span>
                                   <span className="inline-flex items-center px-2 py-1 rounded-md bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)] text-[#F3F4F6] w-fit">

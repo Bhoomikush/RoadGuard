@@ -143,10 +143,10 @@ export function AuthorityDashboard() {
       <div className="max-w-6xl mx-auto px-4 py-8 pb-20 space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Authority Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Authority Dashboard</h1>
             <p className="text-[#9CA3AF] text-sm">Review and manage reported road hazards.</p>
           </div>
-          <div className="flex bg-[#161A20] rounded-full p-1 border border-[rgba(255,255,255,0.08)]">
+          <div className="flex flex-wrap sm:flex-nowrap bg-[#161A20] rounded-full p-1 border border-[rgba(255,255,255,0.08)]">
             <button
               onClick={() => setActiveTab('hazards')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'hazards' ? 'bg-[#FFC629] text-[#0E1013]' : 'text-[#9CA3AF] hover:text-[#F3F4F6]'}`}
@@ -217,7 +217,7 @@ export function AuthorityDashboard() {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between">
+                      <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.04)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <span className="text-sm font-medium text-[#9CA3AF]">Update Status:</span>
                         <div className="flex items-center gap-3">
                           {updatingId === report.id && (
@@ -305,7 +305,7 @@ export function AuthorityDashboard() {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between">
+                      <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.04)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <span className="text-sm font-medium text-[#9CA3AF]">Update Complaint Status:</span>
                         <div className="flex items-center gap-3">
                           {updatingComplaintId === complaint.id && (

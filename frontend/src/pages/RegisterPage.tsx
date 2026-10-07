@@ -35,7 +35,10 @@ export function RegisterPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name } },
+        options: { 
+          data: { name },
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        },
       });
       if (error) throw error;
       navigate('/dashboard');

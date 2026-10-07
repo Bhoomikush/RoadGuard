@@ -1,8 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, AlertTriangle, Map as MapIcon, FileText, Bot } from 'lucide-react';
 
-export function BottomNav() {
+interface BottomNavProps {
+  isHidden?: boolean;
+}
+
+export function BottomNav({ isHidden }: BottomNavProps) {
   const location = useLocation();
+
+  if (isHidden) return null;
 
   const navItems = [
     { name: 'Home', path: '/dashboard', icon: LayoutDashboard },
