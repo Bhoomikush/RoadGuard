@@ -15,6 +15,7 @@ const MapPage = React.lazy(() => import('./pages/MapPage').then(m => ({ default:
 const ReportsPage = React.lazy(() => import('./pages/ReportsPage').then(m => ({ default: m.ReportsPage })));
 const RiskZonesPage = React.lazy(() => import('./pages/RiskZonesPage').then(m => ({ default: m.RiskZonesPage })));
 const AssistantPage = React.lazy(() => import('./pages/AssistantPage').then(m => ({ default: m.AssistantPage })));
+const CommunityFeedPage = React.lazy(() => import('./pages/CommunityFeedPage').then(m => ({ default: m.CommunityFeedPage })));
 const AuthorityDashboard = React.lazy(() => import('./pages/AuthorityDashboard').then(m => ({ default: m.AuthorityDashboard })));
 
 const LoadingFallback = () => (
@@ -41,6 +42,7 @@ function App() {
             <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
             <Route path="/risk-zones" element={<ProtectedRoute><RiskZonesPage /></ProtectedRoute>} />
             <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+            <Route path="/feed" element={<ProtectedRoute><CommunityFeedPage /></ProtectedRoute>} />
             <Route path="/authority-dashboard" element={<AuthorityRoute><AuthorityDashboard /></AuthorityRoute>} />
             
             {/* Catch-all */}

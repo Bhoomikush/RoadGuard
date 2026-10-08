@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, Menu, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotifications';
 import { NotificationsList } from '../ui/NotificationsList';
 import { BottomNav } from './BottomNav';
@@ -44,7 +45,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="relative" ref={dropdownRef}>
+          <div className="flex items-center gap-4">
+            <Link to="/feed" className="flex items-center gap-2 text-[#9CA3AF] hover:text-[#FFC629] transition-colors font-medium text-sm">
+              <Users className="w-5 h-5" />
+              <span className="hidden sm:inline">Community</span>
+            </Link>
+
+            <div className="relative" ref={dropdownRef}>
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] text-[#9CA3AF] hover:text-[#F3F4F6] transition-colors focus:outline-none"
@@ -65,6 +72,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
             )}
+          </div>
           </div>
         </div>
 
