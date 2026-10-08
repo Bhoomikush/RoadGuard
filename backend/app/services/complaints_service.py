@@ -26,6 +26,41 @@ async def generate_official_complaint(hazard_data: dict) -> dict:
     if app_name:
         headers["X-Title"] = app_name
 
+    lat = hazard_data.get("latitude")
+    lng = hazard_data.get("longitude")
+    weather_context = ""
+
+    if lat is not None and lng is not None:
+        try:
+            weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,precipitation,wind_speed_10m,weather_code"
+            async with httpx.AsyncClient(timeout=5.0) as w_client:
+                w_resp = await w_client.get(weather_url)
+                w_resp.raise_for_status()
+                w_data = w_resp.json()
+                current = w_data.get("current")
+                if current:
+                    code = current.get("weather_code", -1)
+                    condition = "Unknown"
+                    if code == 0: condition = "Clear"
+                    elif code in [1, 2]: condition = "Partly Cloudy"
+                    elif code == 3: condition = "Cloudy"
+                    elif code in [45, 48]: condition = "Fog"
+                    elif code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]: condition = "Rain"
+                    elif code in [71, 73, 75, 77, 85, 86]: condition = "Snow"
+                    elif code in [95, 96, 99]: condition = "Thunderstorm"
+
+                    temp = current.get("temperature_2m", "N/A")
+                    precip = current.get("precipitation", "N/A")
+                    wind = current.get("wind_speed_10m", "N/A")
+
+                    weather_context = f"Temperature: {temp}°C\nCondition: {condition}\nPrecipitation: {precip} mm\nWind: {wind} km/h"
+        except Exception as e:
+            logger.warning(f"Failed to fetch weather for complaint: {e}")
+
+    weather_section = ""
+    if weather_context:
+        weather_section = f"\n\nCurrent Weather Conditions at Hazard Location:\n{weather_context}\n"
+
     prompt = f"""You are an assistant generating an official road-hazard complaint.
 The generated complaint should be professional, factual, concise, and suitable for sending to a local road/public-works authority.
 It must be based ONLY on the supplied hazard information.
@@ -41,7 +76,7 @@ Hazard Information:
 - AI Confidence: {hazard_data.get('ai_confidence', 'N/A')}
 - Latitude: {hazard_data.get('latitude', 'Unknown')}
 - Longitude: {hazard_data.get('longitude', 'Unknown')}
-- Created At: {hazard_data.get('created_at', 'Unknown')}
+- Created At: {hazard_data.get('created_at', 'Unknown')}{weather_section}
 - User Description: {hazard_data.get('description', 'No description provided')}
 
 Return ONLY valid JSON in this exact structure:
