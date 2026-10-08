@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight, Loader2, RefreshCw, Sparkles, Cloud } from 'lucide-react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Badge } from '../components/ui/Badge';
 import { supabase } from '../lib/supabase';
@@ -32,6 +33,13 @@ const icons = {
   low: createCustomIcon('green'),
 };
 
+interface Weather {
+  temperature: number;
+  precipitation: number;
+  wind_speed: number;
+  condition: string;
+}
+
 export function DashboardPage() {
   const [recentHazards, setRecentHazards] = useState<Hazard[]>([]);
   const [allHazards, setAllHazards] = useState<Hazard[]>([]);
@@ -46,6 +54,40 @@ export function DashboardPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [weatherCache, setWeatherCache] = useState<Record<string, Weather>>({});
+  const [weatherLoading, setWeatherLoading] = useState<Record<string, boolean>>({});
+  const [weatherError, setWeatherError] = useState<Record<string, string>>({});
+  const [expandedWeather, setExpandedWeather] = useState<Record<string, boolean>>({});
+
+  const fetchWeatherForHazard = async (hazardId: string, latitude: number, longitude: number) => {
+    if (expandedWeather[hazardId]) {
+      setExpandedWeather(prev => ({ ...prev, [hazardId]: false }));
+      return;
+    }
+    setExpandedWeather(prev => ({ ...prev, [hazardId]: true }));
+    
+    const key = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+    if (weatherCache[key] || weatherLoading[key] || weatherError[key]) return;
+
+    setWeatherLoading(prev => ({ ...prev, [key]: true }));
+    setWeatherError(prev => ({ ...prev, [key]: '' }));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const response = await axios.get(`${backendUrl}/api/hazards/weather`, {
+        params: { lat: latitude, lng: longitude },
+        headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+      });
+      setWeatherCache(prev => ({ ...prev, [key]: response.data }));
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      setWeatherError(prev => ({ ...prev, [key]: 'Weather unavailable' }));
+    } finally {
+      setWeatherLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
 
   const { user } = useAuth();
   const [greeting, setGreeting] = useState('');
@@ -235,6 +277,7 @@ export function DashboardPage() {
                   <th className="px-6 py-4 font-medium">Severity</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium">Reported</th>
+                  <th className="px-6 py-4 font-medium text-right">Weather</th>
                 </tr>
               </thead>
               <tbody>
@@ -260,6 +303,36 @@ export function DashboardPage() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-[#9CA3AF]">{timeAgo(hazard.createdAt)}</td>
+                    <td className="px-6 py-4 text-right align-top">
+                      <button onClick={() => fetchWeatherForHazard(hazard.id, hazard.latitude, hazard.longitude)} className="text-xs text-[#FFC629] hover:underline inline-flex items-center gap-1">
+                        <Cloud className="w-3 h-3" /> {expandedWeather[hazard.id] ? 'Hide' : 'View'}
+                      </button>
+                      {expandedWeather[hazard.id] && (() => {
+                        const key = `${hazard.latitude.toFixed(2)},${hazard.longitude.toFixed(2)}`;
+                        const w = weatherCache[key];
+                        const loading = weatherLoading[key];
+                        const err = weatherError[key];
+                        
+                        return (
+                          <div className="mt-2 bg-[#0E1013] p-2 rounded-lg border border-[rgba(255,255,255,0.08)] text-left min-w-[130px]">
+                            {loading ? (
+                              <p className="text-[10px] text-[#F3F4F6]">Loading weather...</p>
+                            ) : err ? (
+                              <p className="text-[10px] text-[#EF4444]">{err}</p>
+                            ) : w ? (
+                              <div>
+                                <p className="text-xs text-[#F3F4F6] font-bold">
+                                  {w.temperature}°C • {w.condition}
+                                </p>
+                                <p className="text-[10px] text-[#9CA3AF] mt-0.5 whitespace-nowrap">
+                                  Rain: {w.precipitation}mm • Wind: {w.wind_speed}km/h
+                                </p>
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -285,9 +358,39 @@ export function DashboardPage() {
                   <span className="truncate">{hazard.location}</span>
                 </p>
                 <div className="mt-auto">
-                  <Badge variant={getStatusBadgeVariant(hazard.status as string)}>
-                    {formatStatus(hazard.status as string)}
-                  </Badge>
+                  <div className="flex items-center justify-between">
+                    <Badge variant={getStatusBadgeVariant(hazard.status as string)}>
+                      {formatStatus(hazard.status as string)}
+                    </Badge>
+                    <button onClick={() => fetchWeatherForHazard(hazard.id, hazard.latitude, hazard.longitude)} className="text-xs text-[#FFC629] hover:underline flex items-center gap-1">
+                      <Cloud className="w-3 h-3" /> {expandedWeather[hazard.id] ? 'Hide' : 'Weather'}
+                    </button>
+                  </div>
+                  {expandedWeather[hazard.id] && (() => {
+                    const key = `${hazard.latitude.toFixed(2)},${hazard.longitude.toFixed(2)}`;
+                    const w = weatherCache[key];
+                    const loading = weatherLoading[key];
+                    const err = weatherError[key];
+                    
+                    return (
+                      <div className="mt-3 bg-[#161A20] p-2 rounded-lg border border-[rgba(255,255,255,0.08)]">
+                        {loading ? (
+                          <p className="text-[10px] text-[#F3F4F6]">Loading weather...</p>
+                        ) : err ? (
+                          <p className="text-[10px] text-[#EF4444]">{err}</p>
+                        ) : w ? (
+                          <div>
+                            <p className="text-xs text-[#F3F4F6] font-bold">
+                              {w.temperature}°C • {w.condition}
+                            </p>
+                            <p className="text-[10px] text-[#9CA3AF] mt-0.5">
+                              Rain: {w.precipitation} mm • Wind: {w.wind_speed} km/h
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             ))}
