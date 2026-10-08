@@ -94,7 +94,7 @@ def generate_rag_response(question: str, user_data: dict) -> str:
     # First, try to use tools
     try:
         chat = client.chats.create(
-            model='gemini-3.6-flash',
+            model='gemini-3.5-flash',
             config=types.GenerateContentConfig(
                 tools=[get_nearby_hazards, get_hazard_status, get_user_report_summary, get_area_stats],
                 temperature=0.0
@@ -135,6 +135,7 @@ def generate_rag_response(question: str, user_data: dict) -> str:
                 
     except Exception as e:
         # If tool call fails (e.g. bad params), catch it and return exact error message
+        print(f"First block error: {repr(e)}")
         return "I couldn't retrieve that information right now."
             
     # Fallback to Part A retrieval-based answer
@@ -170,7 +171,7 @@ User's Question:
 {question}
 """
         final_res = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-3.5-flash',
             contents=prompt
         )
         return final_res.text.strip()

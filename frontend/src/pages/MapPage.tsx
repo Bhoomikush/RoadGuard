@@ -49,7 +49,7 @@ export function MapPage() {
       try {
         const { data: apiHazardsData, error: sbError } = await supabase
           .from('hazards')
-          .select('*')
+          .select('id, description, severity, status, latitude, longitude, image_url, created_at, ai_detections')
           .order('created_at', { ascending: false });
           
         if (sbError) throw sbError;
@@ -163,8 +163,8 @@ export function MapPage() {
               ref={mapRef}
             >
               <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
               
               {/* Render Risk Zones */}

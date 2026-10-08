@@ -56,33 +56,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // Get the initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    let mounted = true;
+    let currentUserForRole: string | null = null;
+
+    const handleSession = async (session: Session | null) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
-        await fetchUserRole(session.user.id);
+        const userId = session.user.id;
+        // Skip duplicate fetches if we already fetched/are fetching for this exact user
+        if (currentUserForRole !== userId) {
+          currentUserForRole = userId;
+          await fetchUserRole(userId);
+        }
       } else {
+        currentUserForRole = null;
         setRole(null);
       }
-      setLoading(false);
+      
+      if (mounted) setLoading(false);
+    };
+
+    // Get the initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
     });
 
     // Listen for auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserRole(session.user.id);
-      } else {
-        setRole(null);
-      }
-      setLoading(false);
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

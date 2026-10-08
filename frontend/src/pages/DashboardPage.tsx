@@ -80,14 +80,41 @@ export function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch recent hazards
-      const { data: recentData, error: recentError } = await supabase
-        .from('hazards')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(4);
+      // Execute all data fetching in parallel for maximum performance
+      const [
+        recentRes,
+        activeRes,
+        totalRes,
+        highRiskRes,
+        resolvedRes,
+        potholesRes,
+        cracksRes
+      ] = await Promise.all([
+        // Recent 4 hazards (doesn't need image_url or ai_detections for UI)
+        supabase.from('hazards')
+          .select('id, description, severity, status, latitude, longitude, created_at')
+          .order('created_at', { ascending: false })
+          .limit(4),
         
-      if (recentError) throw recentError;
+        // Active hazards for Map and Risk Zones
+        supabase.from('hazards')
+          .select('id, description, severity, status, latitude, longitude, created_at, ai_detections')
+          .neq('status', 'resolved'),
+          
+        // Counts for statistics
+        supabase.from('hazards').select('id', { count: 'exact', head: true }),
+        supabase.from('hazards').select('id', { count: 'exact', head: true }).eq('severity', 'high'),
+        supabase.from('hazards').select('id', { count: 'exact', head: true }).eq('status', 'resolved'),
+        supabase.from('hazards').select('id', { count: 'exact', head: true }).contains('ai_detections', '[{"class_name": "pothole"}]'),
+        supabase.from('hazards').select('id', { count: 'exact', head: true }).contains('ai_detections', '[{"class_name": "crack"}]')
+      ]);
+        
+      const results = [recentRes, activeRes, totalRes, highRiskRes, resolvedRes, potholesRes, cracksRes];
+      const firstError = results.find(r => r.error)?.error;
+      if (firstError) {
+        console.error('Specific Supabase Error:', firstError);
+        throw firstError;
+      }
       
       const mapHazardData = (item: any): Hazard => {
         return {
@@ -104,32 +131,28 @@ export function DashboardPage() {
         } as unknown as Hazard;
       };
 
-      const mappedHazards: Hazard[] = (recentData || []).map(mapHazardData);
-      
+      const mappedHazards: Hazard[] = (recentRes.data || []).map(mapHazardData);
       setRecentHazards(mappedHazards);
 
-      // Fetch stats and map data
-      const { data: allData, error: statsError } = await supabase
-        .from('hazards')
-        .select('*');
-        
-      if (statsError) throw statsError;
-
-      const total = allData?.length || 0;
-      const highRisk = allData?.filter(h => h.severity === HAZARD_SEVERITY.HIGH).length || 0;
-      const resolved = allData?.filter(h => (h.status as string) === HAZARD_STATUS.RESOLVED).length || 0;
-      const active = total - resolved;
-      const aiPotholes = allData?.filter(h => h.ai_detections && Array.isArray(h.ai_detections) && h.ai_detections.some((d: any) => d.class_name === 'pothole')).length || 0;
-      const aiCracks = allData?.filter(h => h.ai_detections && Array.isArray(h.ai_detections) && h.ai_detections.some((d: any) => d.class_name === 'crack')).length || 0;
-
-      setStats({ total, highRisk, active, resolved, aiPotholes, aiCracks });
+      const mappedActiveHazards: Hazard[] = (activeRes.data || []).map(mapHazardData);
       
-      const mappedAllHazards: Hazard[] = (allData || []).map(mapHazardData);
-      setAllHazards(mappedAllHazards);
-      setRiskZones(calculateRiskZones(mappedAllHazards));
+      const total = totalRes.count || 0;
+      const resolved = resolvedRes.count || 0;
+      
+      setStats({ 
+        total, 
+        highRisk: highRiskRes.count || 0, 
+        active: total - resolved, 
+        resolved, 
+        aiPotholes: potholesRes.count || 0, 
+        aiCracks: cracksRes.count || 0 
+      });
+      
+      setAllHazards(mappedActiveHazards);
+      setRiskZones(calculateRiskZones(mappedActiveHazards));
     } catch (err: any) {
       console.error('Failed to fetch dashboard data:', err);
-      setError('Could not load dashboard data. Please try again.');
+      setError(`Could not load dashboard data: ${err.message || 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -336,8 +359,8 @@ export function DashboardPage() {
                 touchZoom={false}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 {riskZones.map(zone => (
                   <Circle

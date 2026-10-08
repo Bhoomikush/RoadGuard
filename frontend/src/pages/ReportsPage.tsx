@@ -98,7 +98,7 @@ export function ReportsPage() {
 
         const { data: apiHazardsData, error: sbError } = await supabase
           .from('hazards')
-          .select('*')
+          .select('id, description, severity, status, latitude, longitude, image_url, created_at, ai_detections')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
           
