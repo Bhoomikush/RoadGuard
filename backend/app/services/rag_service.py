@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 from supabase import create_client, Client, ClientOptions
+import httpx
 
 load_dotenv()
 
@@ -20,7 +21,39 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
-def generate_rag_response(question: str, user_data: dict) -> str:
+def get_weather_context(lat: float, lng: float) -> str:
+    if lat is None or lng is None:
+        return ""
+    try:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,precipitation,wind_speed_10m,weather_code"
+        with httpx.Client(timeout=5.0) as client:
+            response = client.get(url)
+            response.raise_for_status()
+            data = response.json()
+            current = data.get("current")
+            if not current:
+                return ""
+            
+            code = current.get("weather_code", -1)
+            condition = "Unknown"
+            if code == 0: condition = "Clear"
+            elif code in [1, 2]: condition = "Partly Cloudy"
+            elif code == 3: condition = "Cloudy"
+            elif code in [45, 48]: condition = "Fog"
+            elif code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]: condition = "Rain"
+            elif code in [71, 73, 75, 77, 85, 86]: condition = "Snow"
+            elif code in [95, 96, 99]: condition = "Thunderstorm"
+
+            temp = current.get("temperature_2m", "N/A")
+            precip = current.get("precipitation", "N/A")
+            wind = current.get("wind_speed_10m", "N/A")
+
+            return f"Current weather:\nTemperature: {temp}°C\nCondition: {condition}\nPrecipitation: {precip} mm\nWind: {wind} km/h"
+    except Exception as e:
+        print(f"Weather context failed: {e}")
+        return ""
+
+def generate_rag_response(question: str, user_data: dict, lat: float = None, lng: float = None) -> str:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key or api_key == "your_key_here":
         return "Assistant is not fully configured (missing API key)."
@@ -100,7 +133,13 @@ def generate_rag_response(question: str, user_data: dict) -> str:
                 temperature=0.0
             )
         )
-        response = chat.send_message(question)
+        
+        weather_context = get_weather_context(lat, lng) if lat is not None and lng is not None else ""
+        chat_question = question
+        if weather_context:
+            chat_question = f"User Question: {question}\n\n[System Note: The user is currently at lat: {lat}, lng: {lng}. {weather_context.strip()}]"
+
+        response = chat.send_message(chat_question)
         
         if response.function_calls:
             for fn_call in response.function_calls:
@@ -166,10 +205,11 @@ Do not invent facts, laws, penalties, statistics, citations, or government rules
 
 RoadGuard Knowledge Base:
 {context_text}
-
-User's Question:
-{question}
 """
+        if weather_context:
+            prompt += f"\nCurrent Weather at User Location:\n{weather_context.strip()}\n"
+            
+        prompt += f"\nUser's Question:\n{question}\n"
         final_res = client.models.generate_content(
             model='gemini-3.5-flash',
             contents=prompt
