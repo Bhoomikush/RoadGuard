@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from ..dependencies import get_current_user
+import httpx
 from pydantic import BaseModel
 from typing import Optional
 from supabase import create_client, Client, ClientOptions
@@ -82,3 +83,47 @@ async def get_hazards(user_data = Depends(get_current_user)):
         return result.data
     except Exception as e:
         raise HTTPException(status_code=500, detail="An internal error occurred while fetching hazards.")
+
+def map_weather_code(code: int) -> str:
+    if code == 0: return "Clear"
+    elif code in [1, 2]: return "Partly Cloudy"
+    elif code == 3: return "Cloudy"
+    elif code in [45, 48]: return "Fog"
+    elif code in [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]: return "Rain"
+    elif code in [71, 73, 75, 77, 85, 86]: return "Snow"
+    elif code in [95, 96, 99]: return "Thunderstorm"
+    return "Unknown"
+
+@router.get("/weather")
+async def get_hazard_weather(
+    lat: float = Query(..., ge=-90, le=90, description="Latitude"),
+    lng: float = Query(..., ge=-180, le=180, description="Longitude"),
+    user_data = Depends(get_current_user)
+):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,precipitation,wind_speed_10m,weather_code"
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+            
+            current = data.get("current", {})
+            if not current:
+                raise ValueError("Malformed response from Open-Meteo")
+                
+            return {
+                "temperature": current.get("temperature_2m", 0.0),
+                "precipitation": current.get("precipitation", 0.0),
+                "wind_speed": current.get("wind_speed_10m", 0.0),
+                "condition": map_weather_code(current.get("weather_code", -1))
+            }
+            
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Weather service timeout.")
+    except httpx.RequestError:
+        raise HTTPException(status_code=502, detail="Failed to connect to weather service.")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail="Weather service returned an error.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="An internal error occurred while fetching weather data.")

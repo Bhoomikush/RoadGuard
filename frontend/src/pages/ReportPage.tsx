@@ -1,9 +1,16 @@
-import { useState, useRef } from 'react';
-import { Camera, Video, MapPin, Send, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Camera, Video, MapPin, Send, Loader2, Cloud } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { supabase } from '../lib/supabase';
 import axios from 'axios';
 import ConeMascot from '../components/ConeMascot';
+
+interface Weather {
+  temperature: number;
+  precipitation: number;
+  wind_speed: number;
+  condition: string;
+}
 
 export function ReportPage() {
   const [reportType, setReportType] = useState<'photo' | 'video'>('photo');
@@ -19,8 +26,51 @@ export function ReportPage() {
   const [mlResult, setMlResult] = useState<any>(null);
   const [mlError, setMlError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [weather, setWeather] = useState<Weather | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const submitLockRef = useRef(false);
+
+  useEffect(() => {
+    if (!location) {
+      setWeather(null);
+      setWeatherError('');
+      return;
+    }
+    
+    let isMounted = true;
+    const fetchWeather = async () => {
+      setWeatherLoading(true);
+      setWeatherError('');
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await axios.get(`${backendUrl}/api/hazards/weather`, {
+          params: { lat: location.lat, lng: location.lng },
+          headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+        });
+        if (isMounted) {
+          setWeather(response.data);
+        }
+      } catch (err) {
+        console.error('Weather fetch error:', err);
+        if (isMounted) {
+          setWeatherError('Weather information unavailable');
+        }
+      } finally {
+        if (isMounted) {
+          setWeatherLoading(false);
+        }
+      }
+    };
+    
+    fetchWeather();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [location]);
 
   const analyzeImage = async (selectedFile: File) => {
     setIsAnalyzing(true);
@@ -337,9 +387,34 @@ export function ReportPage() {
                   </div>
                   
                   {location && (
-                    <div className="flex gap-4 mt-4 text-xs text-[#9CA3AF] font-mono">
-                      <span>Lat: {location.lat.toFixed(6)}</span>
-                      <span>Lng: {location.lng.toFixed(6)}</span>
+                    <div className="flex flex-col gap-4 mt-4">
+                      <div className="flex gap-4 text-xs text-[#9CA3AF] font-mono">
+                        <span>Lat: {location.lat.toFixed(6)}</span>
+                        <span>Lng: {location.lng.toFixed(6)}</span>
+                      </div>
+                      
+                      <div className="bg-[#0E1013] p-4 rounded-[16px] border border-[rgba(255,255,255,0.08)] flex items-start gap-3">
+                        <Cloud className="w-5 h-5 text-[#FFC629] mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs text-[#9CA3AF] uppercase font-semibold mb-1">Weather at report location</p>
+                          {weatherLoading ? (
+                            <p className="text-sm text-[#F3F4F6] flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin text-[#FFC629]" /> Loading weather...
+                            </p>
+                          ) : weatherError ? (
+                            <p className="text-sm text-[#EF4444]">{weatherError}</p>
+                          ) : weather ? (
+                            <>
+                              <p className="text-[#F3F4F6] font-bold">
+                                {weather.temperature}°C • {weather.condition}
+                              </p>
+                              <p className="text-sm text-[#9CA3AF] mt-0.5">
+                                Rain: {weather.precipitation} mm • Wind: {weather.wind_speed} km/h
+                              </p>
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
