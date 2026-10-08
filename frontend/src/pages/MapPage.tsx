@@ -14,6 +14,7 @@ import { getHazardTitle, HAZARD_STATUS } from '../utils/hazard';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { Search, Navigation, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { SeverityBadge } from '../components/ui/SeverityBadge';
 
 // Create custom colored icons for severity
@@ -34,6 +35,13 @@ const icons = {
   low: createCustomIcon('green'),
 };
 
+interface Weather {
+  temperature: number;
+  precipitation: number;
+  wind_speed: number;
+  condition: string;
+}
+
 export function MapPage() {
   const [selectedHazard, setSelectedHazard] = useState<Hazard | null>(null);
   const [hazards, setHazards] = useState<Hazard[]>([]);
@@ -43,6 +51,33 @@ export function MapPage() {
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const mapRef = useRef<any>(null);
+
+  const [weatherCache, setWeatherCache] = useState<Record<string, Weather>>({});
+  const [weatherLoading, setWeatherLoading] = useState<Record<string, boolean>>({});
+  const [weatherError, setWeatherError] = useState<Record<string, string>>({});
+
+  const fetchWeatherForHazard = async (latitude: number, longitude: number) => {
+    const key = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+    if (weatherCache[key] || weatherLoading[key] || weatherError[key]) return;
+
+    setWeatherLoading(prev => ({ ...prev, [key]: true }));
+    setWeatherError(prev => ({ ...prev, [key]: '' }));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const response = await axios.get(`${backendUrl}/api/hazards/weather`, {
+        params: { lat: latitude, lng: longitude },
+        headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+      });
+      setWeatherCache(prev => ({ ...prev, [key]: response.data }));
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      setWeatherError(prev => ({ ...prev, [key]: 'Weather unavailable' }));
+    } finally {
+      setWeatherLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
 
   useEffect(() => {
     const fetchHazards = async () => {
@@ -205,7 +240,10 @@ export function MapPage() {
                     position={[hazard.latitude, hazard.longitude]}
                     icon={icons[iconKey]}
                     eventHandlers={{
-                      click: () => setSelectedHazard(hazard),
+                      click: () => {
+                        setSelectedHazard(hazard);
+                        fetchWeatherForHazard(hazard.latitude, hazard.longitude);
+                      },
                     }}
                   >
                     <Popup className="roadguard-popup">
@@ -220,7 +258,36 @@ export function MapPage() {
                            <SeverityBadge severity={hazard.severity} />
                         </div>
 
-                        <p className="text-xs text-[#9CA3AF] m-0 mt-2">Status: <span className="text-[#F3F4F6] capitalize">{hazard.status}</span></p>
+                        {(() => {
+                          const key = `${hazard.latitude.toFixed(2)},${hazard.longitude.toFixed(2)}`;
+                          const w = weatherCache[key];
+                          const loading = weatherLoading[key];
+                          const err = weatherError[key];
+                          
+                          return (
+                            <div className="mt-2 bg-[#0E1013] p-2 rounded-lg border border-[rgba(255,255,255,0.08)]">
+                              <p className="text-[10px] text-[#9CA3AF] uppercase font-semibold mb-1">Weather</p>
+                              {loading ? (
+                                <p className="text-xs text-[#F3F4F6]">Loading weather...</p>
+                              ) : err ? (
+                                <p className="text-xs text-[#EF4444]">{err}</p>
+                              ) : w ? (
+                                <div>
+                                  <p className="text-xs text-[#F3F4F6] font-bold">
+                                    {w.temperature}°C • {w.condition}
+                                  </p>
+                                  <p className="text-[10px] text-[#9CA3AF] mt-0.5">
+                                    Rain: {w.precipitation} mm • Wind: {w.wind_speed} km/h
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-[#9CA3AF]">Click marker to load weather</p>
+                              )}
+                            </div>
+                          );
+                        })()}
+
+                        <p className="text-xs text-[#9CA3AF] m-0 mt-3">Status: <span className="text-[#F3F4F6] capitalize">{hazard.status}</span></p>
                         {hazard.createdAt && (
                           <p className="text-xs text-[#9CA3AF] m-0 mt-1">Reported: {new Date(hazard.createdAt).toLocaleDateString()}</p>
                         )}
