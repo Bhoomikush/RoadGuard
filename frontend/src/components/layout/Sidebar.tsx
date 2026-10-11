@@ -7,6 +7,7 @@ import {
   Map as MapIcon, 
   FileText, 
   Activity, 
+  Users,
   Bot, 
   Settings, 
   LogOut,
@@ -49,6 +50,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Live Map', path: '/map', icon: MapIcon },
     { name: 'My Reports', path: '/reports', icon: FileText },
     { name: 'Risk Zones', path: '/risk-zones', icon: Activity },
+    { name: 'Community Feed', path: '/feed', icon: Users },
     { name: 'AI Assistant', path: '/assistant', icon: Bot },
   ];
 
