@@ -52,7 +52,8 @@ export function AssistantPage() {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const response = await axios.post('http://127.0.0.1:8000/api/chat', { message: text }, { 
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+      const response = await axios.post(`${backendUrl}/api/chat`, { message: text }, { 
         timeout: 30000,
         headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}
       });

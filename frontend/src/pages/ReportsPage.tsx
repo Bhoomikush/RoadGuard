@@ -24,7 +24,8 @@ export function ReportsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not logged in");
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/complaints/generate/${hazardId}`, {
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+      const response = await fetch(`${backendUrl}/api/complaints/generate/${hazardId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -48,7 +49,8 @@ export function ReportsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not logged in");
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/complaints/${complaintId}/send`, {
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+      const response = await fetch(`${backendUrl}/api/complaints/${complaintId}/send`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`

@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import create_client, ClientOptions
 from ..dependencies import get_current_user
@@ -7,6 +8,8 @@ from ..services.email_service import send_complaint_email
 import logging
 from datetime import datetime, timezone
 
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -14,8 +17,8 @@ router = APIRouter(
     tags=["complaints"],
 )
 
-url = os.environ.get("VITE_SUPABASE_URL")
-key = os.environ.get("VITE_SUPABASE_PUBLISHABLE_KEY")
+url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY") or os.environ.get("VITE_SUPABASE_PUBLISHABLE_KEY")
 
 @router.post("/generate/{hazard_id}")
 async def generate_complaint(hazard_id: str, user_data = Depends(get_current_user)):

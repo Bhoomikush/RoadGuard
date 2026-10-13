@@ -2,10 +2,33 @@ import os
 from io import BytesIO
 from PIL import Image
 from ultralytics import YOLO
+from dotenv import load_dotenv
 
-# Path based on the project structure
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-MODEL_PATH = os.path.join(BASE_DIR, "ml", "models", "best.pt")
+load_dotenv()
+
+# Model path resolution:
+# 1. Environment variable MODEL_PATH (recommended for production/containers/Render disk)
+# 2. Local repository default: <repo_root>/ml/models/best.pt
+# 3. Fallback backend-relative default: <backend_dir>/models/best.pt
+# NOTE: In production (e.g., Render), best.pt is not tracked in Git. The host must supply
+# the model file either via a build script download, persistent disk, or MODEL_PATH env var.
+MODEL_PATH = os.environ.get("MODEL_PATH")
+
+if not MODEL_PATH:
+    # 4 levels up: backend/app/services -> backend/app -> backend -> RoadGuard repo root
+    REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    default_repo_path = os.path.join(REPO_ROOT, "ml", "models", "best.pt")
+
+    # 3 levels up: backend/app/services -> backend/app -> backend dir
+    BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    backend_local_path = os.path.join(BACKEND_DIR, "models", "best.pt")
+
+    if os.path.exists(default_repo_path):
+        MODEL_PATH = default_repo_path
+    elif os.path.exists(backend_local_path):
+        MODEL_PATH = backend_local_path
+    else:
+        MODEL_PATH = default_repo_path
 
 # Load the model only once upon module initialization
 try:
@@ -14,7 +37,7 @@ try:
         print(f"Successfully loaded YOLOv8 model from {MODEL_PATH}")
     else:
         model = None
-        print(f"Warning: YOLOv8 model not found at {MODEL_PATH}")
+        print(f"Warning: YOLOv8 model not found at {MODEL_PATH}. Production must supply this file.")
 except Exception as e:
     model = None
     print(f"Error loading YOLOv8 model: {e}")

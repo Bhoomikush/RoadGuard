@@ -82,7 +82,7 @@ export function MapPage() {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
       const response = await axios.get(`${backendUrl}/api/hazards/weather`, {
         params: { lat: latitude, lng: longitude },
         headers: session ? { 'Authorization': `Bearer ${session.access_token}` } : {}

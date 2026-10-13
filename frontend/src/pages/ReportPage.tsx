@@ -44,7 +44,7 @@ export function ReportPage() {
       setWeatherLoading(true);
       setWeatherError('');
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+        const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
         const { data: { session } } = await supabase.auth.getSession();
         const response = await axios.get(`${backendUrl}/api/hazards/weather`, {
           params: { lat: location.lat, lng: location.lng },
@@ -78,7 +78,7 @@ export function ReportPage() {
     setMlError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
       const formData = new FormData();
       formData.append('file', selectedFile);
       const response = await axios.post(`${backendUrl}/api/ml/detect`, formData, {
@@ -196,7 +196,7 @@ export function ReportPage() {
         .upload(fileName, file);
       if (uploadError) throw new Error(`Failed to upload image: ${uploadError.message}`);
       let overallSeverity = mlResult?.overall_severity || 'low';
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
       const hazardPayload = {
         image_url: fileName,
         latitude: location.lat,

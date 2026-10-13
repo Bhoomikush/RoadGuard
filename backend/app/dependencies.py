@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
 load_dotenv(env_path)
 
-url = os.environ.get("VITE_SUPABASE_URL")
-key = os.environ.get("VITE_SUPABASE_PUBLISHABLE_KEY")
+url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL")
+key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY") or os.environ.get("VITE_SUPABASE_PUBLISHABLE_KEY")
 
 if not url or not key:
     raise ValueError("Missing Supabase credentials in environment variables")
