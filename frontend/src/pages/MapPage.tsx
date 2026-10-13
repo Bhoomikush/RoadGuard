@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { MapLegend } from '../components/domain/MapLegend';
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { HazardCard } from '../components/domain/HazardCard';
@@ -40,6 +40,23 @@ interface Weather {
   precipitation: number;
   wind_speed: number;
   condition: string;
+}
+
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    const handleResize = () => map.invalidateSize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
+  return null;
 }
 
 export function MapPage() {
@@ -113,8 +130,16 @@ export function MapPage() {
   }, []);
 
   const displayedHazards = useMemo(() => {
-    return hazards.filter(h => (h.status as string) !== HAZARD_STATUS.RESOLVED && (severityFilter === 'all' || h.severity === severityFilter));
-  }, [hazards, severityFilter]);
+    const query = searchQuery.trim().toLowerCase();
+    return hazards.filter(h => {
+      const isNotResolved = (h.status as string) !== HAZARD_STATUS.RESOLVED;
+      const matchesSeverity = severityFilter === 'all' || h.severity === severityFilter;
+      const matchesSearch = !query || 
+        (h.type ? h.type.toLowerCase().includes(query) : false) || 
+        (h.location ? h.location.toLowerCase().includes(query) : false);
+      return isNotResolved && matchesSeverity && matchesSearch;
+    });
+  }, [hazards, severityFilter, searchQuery]);
 
   // Calculate risk zones from the current hazards
   const zones = useMemo(() => calculateRiskZones(hazards), [hazards]);
@@ -139,9 +164,9 @@ export function MapPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)] min-h-[400px] md:min-h-[600px]">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:h-[calc(100vh-200px)] lg:min-h-[600px]">
           {/* Map Container Wrapper */}
-          <div className="lg:col-span-3 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] overflow-hidden relative shadow-inner h-full flex flex-col">
+          <div className="lg:col-span-3 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] overflow-hidden relative shadow-inner h-[50vh] min-h-[380px] lg:h-full lg:min-h-0 flex flex-col">
             
             {/* Floating Search/Filter Panel */}
             <div className="absolute top-4 left-4 right-4 md:right-auto z-[1000] bg-[#161A20]/95 backdrop-blur-md rounded-[24px] border border-[rgba(255,255,255,0.08)] p-3 md:w-96 flex flex-col gap-3 shadow-lg pointer-events-auto max-h-[40%] overflow-y-auto scrollbar-hide">
@@ -197,6 +222,7 @@ export function MapPage() {
               zoomControl={false}
               ref={mapRef}
             >
+              <MapResizer />
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -305,7 +331,7 @@ export function MapPage() {
           </div>
 
           {/* Side Panel */}
-          <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-5 overflow-y-auto h-full flex flex-col">
+          <div className="lg:col-span-1 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-5 overflow-y-auto max-h-[450px] lg:max-h-none lg:h-full flex flex-col">
             <h3 className="text-lg font-semibold text-[#F3F4F6] font-['Sora',sans-serif] mb-4">Nearby Hazards</h3>
             
             <div className="space-y-4 flex-1">
