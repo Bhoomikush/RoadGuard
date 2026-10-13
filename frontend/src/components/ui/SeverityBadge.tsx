@@ -7,13 +7,14 @@ interface SeverityBadgeProps {
 }
 
 export function SeverityBadge({ severity, className = '' }: SeverityBadgeProps) {
+  const sev = (severity || 'low').toString().toLowerCase();
   const variant = 
-    severity === 'high' ? 'danger' :
-    severity === 'medium' ? 'warning' : 'success';
+    sev === 'high' || sev === 'critical' ? 'danger' :
+    sev === 'medium' ? 'warning' : 'success';
     
   return (
     <Badge variant={variant} className={className}>
-      {severity.toUpperCase()}
+      {sev.toUpperCase()}
     </Badge>
   );
 }
