@@ -570,10 +570,10 @@ export function DashboardPage() {
       <div className="font-['Inter'] text-[#F3F4F6]">
         
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pt-1">
           <div>
-            <h1 className="text-2xl font-bold text-[#F3F4F6] font-['Sora',sans-serif]">{greeting || 'Good morning, RoadGuard.'}</h1>
-            <p className="text-[#9CA3AF] mt-1">Here's what's happening on the roads.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#F3F4F6] font-['Sora',sans-serif] tracking-tight leading-snug">{greeting || 'Good morning, RoadGuard.'}</h1>
+            <p className="text-[#9CA3AF] mt-1 text-sm sm:text-base">Here's what's happening on the roads.</p>
           </div>
           <div>
             <Link to="/report" className="inline-flex items-center justify-center px-4 py-2 bg-[#FFC629] text-[#0E1013] rounded-lg font-medium hover:opacity-90 transition-opacity">

@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <main className="flex-1 overflow-y-auto relative">
         {/* Top Header / Navigation for Notifications */}
-        <div className="absolute lg:sticky top-0 left-0 right-0 z-20 w-full px-4 sm:px-8 py-4 flex justify-between items-center bg-[#0E1013]/90 backdrop-blur-sm lg:bg-transparent lg:justify-end">
+        <div className="sticky top-0 left-0 right-0 z-20 w-full px-4 sm:px-8 py-3.5 flex justify-between items-center bg-[#0E1013]/95 backdrop-blur-md lg:bg-transparent lg:justify-end">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="lg:hidden p-2 -ml-2 text-[#9CA3AF] hover:text-[#F3F4F6] focus:outline-none"
@@ -76,7 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        <div className="px-3 sm:px-6 lg:px-8 pb-28 lg:pb-8 pt-16 lg:pt-0 max-w-7xl mx-auto w-full">
+        <div className="px-4 sm:px-6 lg:px-8 pb-28 lg:pb-8 pt-2 sm:pt-4 lg:pt-0 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>
