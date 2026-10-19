@@ -420,7 +420,7 @@ export function CommunityFeedPage() {
 
   return (
     <DashboardLayout>
-      <div className="fixed inset-0 left-64 bg-[#0E1013] -z-10" />
+      <div className="fixed inset-0 left-0 lg:left-64 bg-[#0E1013] -z-10" />
       <div className="font-['Inter'] text-[#F3F4F6] pb-12 max-w-4xl mx-auto space-y-8">
         
         {/* Header Section */}

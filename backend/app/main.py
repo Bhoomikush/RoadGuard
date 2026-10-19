@@ -8,13 +8,25 @@ if os.path.exists(env_path):
 else:
     load_dotenv()
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from . import config
 from .routes import hazards, ml, chat, complaints
 from .services import ml_service
 
-app = FastAPI(title="RoadGuard AI API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Eagerly ensure model is initialized during server startup
+    try:
+        ml_service.load_model()
+    except Exception:
+        pass
+    yield
+
+
+app = FastAPI(title="RoadGuard AI API", lifespan=lifespan)
 
 # Configure CORS: allow origins from ALLOWED_ORIGINS env var + local dev origins
 raw_origins = os.environ.get("ALLOWED_ORIGINS", "")
@@ -26,11 +38,12 @@ default_origins = [
     "http://127.0.0.1:5174",
 ]
 allowed_origins = list(dict.fromkeys(default_origins + env_origins))
+allow_all = "*" in allowed_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"] if allow_all else allowed_origins,
+    allow_credentials=not allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -40,12 +53,28 @@ app.include_router(ml.router)
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(complaints.router)
 
+
+@app.get("/")
+def root():
+    return {
+        "status": "ok",
+        "service": "RoadGuard AI API",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+
 @app.get("/api/health")
 def health_check():
     return {
         "status": "ok",
         "service": "RoadGuard AI API",
-        "ml_model_loaded": ml_service.model is not None
+        "ml_model_loaded": ml_service.is_model_loaded()
     }
 
 if __name__ == "__main__":

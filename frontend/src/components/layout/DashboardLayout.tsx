@@ -63,7 +63,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 shadow-lg shadow-black/50 z-30">
+              <div className="absolute right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 max-w-sm shadow-lg shadow-black/50 z-30">
                 <NotificationsList 
                   notifications={notifications}
                   loading={loading}
@@ -76,7 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        <div className="px-4 sm:px-8 pb-24 lg:pb-8 pt-20 lg:pt-0 max-w-7xl mx-auto">
+        <div className="px-3 sm:px-6 lg:px-8 pb-28 lg:pb-8 pt-16 lg:pt-0 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>

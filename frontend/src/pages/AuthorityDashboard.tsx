@@ -6,6 +6,18 @@ import type { Hazard } from '../types';
 import { supabase } from '../lib/supabase';
 import { FileText, AlertCircle, Clock, CheckCircle, Search, MapPin } from 'lucide-react';
 
+const StatCardItem = ({ title, value, icon: Icon }: { title: string, value: number, icon: any }) => (
+  <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full min-h-[120px] sm:min-h-[140px]">
+    <div className="flex items-start justify-between mb-2 sm:mb-4">
+      <h3 className="text-[#9CA3AF] text-xs sm:text-[15px] font-medium leading-tight">{title}</h3>
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFC629]" />
+      </div>
+    </div>
+    <div className="text-2xl sm:text-4xl font-['Sora',sans-serif] font-bold text-[#F3F4F6]">{value}</div>
+  </div>
+);
+
 export function AuthorityDashboard() {
   const [reports, setReports] = useState<Hazard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,18 +116,6 @@ export function AuthorityDashboard() {
   const inProgressCount = reports.filter(r => (r.status as string) === 'in_progress').length;
   const resolvedCount = reports.filter(r => (r.status as string) === 'resolved').length;
 
-  const StatCardPhase8 = ({ title, value, icon: Icon }: { title: string, value: number, icon: any }) => (
-    <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-6 flex flex-col justify-between h-full min-h-[140px]">
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-[#9CA3AF] text-[15px] font-medium">{title}</h3>
-        <div className="w-10 h-10 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center shrink-0">
-          <Icon className="w-5 h-5 text-[#FFC629]" />
-        </div>
-      </div>
-      <div className="text-4xl font-['Sora',sans-serif] font-bold text-[#F3F4F6]">{value}</div>
-    </div>
-  );
-
   const timeAgo = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -163,12 +163,14 @@ export function AuthorityDashboard() {
         </div>
 
         {activeTab === 'hazards' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCardPhase8 title="Total Reports" value={totalReports} icon={FileText} />
-            <StatCardPhase8 title="Reported" value={reportedCount} icon={AlertCircle} />
-            <StatCardPhase8 title="Under Review" value={underReviewCount} icon={Search} />
-            <StatCardPhase8 title="In Progress" value={inProgressCount} icon={Clock} />
-            <StatCardPhase8 title="Resolved" value={resolvedCount} icon={CheckCircle} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <StatCardItem title="Total Reports" value={totalReports} icon={FileText} />
+            <StatCardItem title="Reported" value={reportedCount} icon={AlertCircle} />
+            <StatCardItem title="Under Review" value={underReviewCount} icon={Search} />
+            <StatCardItem title="In Progress" value={inProgressCount} icon={Clock} />
+            <div className="col-span-2 sm:col-span-1">
+              <StatCardItem title="Resolved" value={resolvedCount} icon={CheckCircle} />
+            </div>
           </div>
         )}
 

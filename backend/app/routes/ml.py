@@ -29,5 +29,7 @@ async def detect_hazards(file: UploadFile = File(...), user_data = Depends(get_c
         raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail="An error occurred during inference.")

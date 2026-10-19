@@ -6,6 +6,18 @@ import { FileText, AlertTriangle, CheckCircle, Activity, BarChart2 } from 'lucid
 import type { Hazard } from '../types';
 import { getHazardTitle, HAZARD_STATUS, HAZARD_SEVERITY } from '../utils/hazard';
 
+const AnalyticsCard = ({ title, value, icon: Icon }: { title: string, value: number, icon: any }) => (
+  <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-5 sm:p-6 flex flex-col justify-between h-full min-h-[120px] sm:min-h-[140px]">
+    <div className="flex items-start justify-between mb-2 sm:mb-4">
+      <h3 className="text-[#9CA3AF] text-xs sm:text-[15px] font-medium leading-tight">{title}</h3>
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFC629]" />
+      </div>
+    </div>
+    <div className="text-2xl sm:text-4xl font-['Sora',sans-serif] font-bold text-[#F3F4F6]">{value}</div>
+  </div>
+);
+
 export function AnalyticsPage() {
   const [hazards, setHazards] = useState<Hazard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,18 +103,6 @@ export function AnalyticsPage() {
   const mediumRiskZones = riskZones.filter(z => (z.level as string).toUpperCase() === 'MEDIUM').length;
   const lowRiskZones = riskZones.filter(z => (z.level as string).toUpperCase() === 'LOW').length;
 
-  const StatCardPhase7 = ({ title, value, icon: Icon }: { title: string, value: number, icon: any }) => (
-    <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] p-6 flex flex-col justify-between h-full min-h-[140px]">
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-[#9CA3AF] text-[15px] font-medium">{title}</h3>
-        <div className="w-10 h-10 rounded-full bg-[rgba(255,255,255,0.04)] flex items-center justify-center shrink-0">
-          <Icon className="w-5 h-5 text-[#FFC629]" />
-        </div>
-      </div>
-      <div className="text-4xl font-['Sora',sans-serif] font-bold text-[#F3F4F6]">{value}</div>
-    </div>
-  );
-
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto px-4 py-8 pb-20 space-y-6">
@@ -130,11 +130,11 @@ export function AnalyticsPage() {
         ) : (
           <div className="space-y-6">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCardPhase7 title="Total Reports" value={totalReports} icon={FileText} />
-              <StatCardPhase7 title="Active Reports" value={activeReports} icon={AlertTriangle} />
-              <StatCardPhase7 title="Resolved Reports" value={resolvedReports} icon={CheckCircle} />
-              <StatCardPhase7 title="Active Risk Zones" value={activeRiskZonesCount} icon={Activity} />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              <AnalyticsCard title="Total Reports" value={totalReports} icon={FileText} />
+              <AnalyticsCard title="Active Reports" value={activeReports} icon={AlertTriangle} />
+              <AnalyticsCard title="Resolved Reports" value={resolvedReports} icon={CheckCircle} />
+              <AnalyticsCard title="Active Risk Zones" value={activeRiskZonesCount} icon={Activity} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

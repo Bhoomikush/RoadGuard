@@ -17,6 +17,7 @@ const RiskZonesPage = React.lazy(() => import('./pages/RiskZonesPage').then(m =>
 const AssistantPage = React.lazy(() => import('./pages/AssistantPage').then(m => ({ default: m.AssistantPage })));
 const CommunityFeedPage = React.lazy(() => import('./pages/CommunityFeedPage').then(m => ({ default: m.CommunityFeedPage })));
 const AuthorityDashboard = React.lazy(() => import('./pages/AuthorityDashboard').then(m => ({ default: m.AuthorityDashboard })));
+const VoiceComplaintPage = React.lazy(() => import('./pages/VoiceComplaintPage').then(m => ({ default: m.VoiceComplaintPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[#0E1013] flex items-center justify-center">
@@ -38,6 +39,8 @@ function App() {
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/report" element={<ProtectedRoute><ReportPage /></ProtectedRoute>} />
+            <Route path="/voice-complaint" element={<ProtectedRoute><VoiceComplaintPage /></ProtectedRoute>} />
+            <Route path="/report/voice" element={<ProtectedRoute><VoiceComplaintPage /></ProtectedRoute>} />
             <Route path="/map" element={<ProtectedRoute><MapPage /></ProtectedRoute>} />
             <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
             <Route path="/risk-zones" element={<ProtectedRoute><RiskZonesPage /></ProtectedRoute>} />

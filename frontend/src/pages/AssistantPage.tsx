@@ -80,21 +80,21 @@ export function AssistantPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-64px)] max-w-3xl mx-auto pt-6 bg-[#0E1013]">
+      <div className="flex flex-col h-[calc(100dvh-96px)] lg:h-[calc(100vh-64px)] max-w-3xl mx-auto pt-2 sm:pt-6 bg-[#0E1013]">
         {messages.length <= 1 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
             <div className="mb-4">
               <ConeMascot waving size={80} title="" />
             </div>
-            <h1 className="text-2xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Ask RoadGuard AI</h1>
-            <p className="text-[#9CA3AF] text-sm mb-8">Ask me anything about road safety, hazards, and reporting.</p>
+            <h1 className="text-xl sm:text-2xl font-['Sora',sans-serif] font-bold text-[#F3F4F6] mb-2">Ask RoadGuard AI</h1>
+            <p className="text-[#9CA3AF] text-xs sm:text-sm mb-6 sm:mb-8">Ask me anything about road safety, hazards, and reporting.</p>
             
-            <div className="flex flex-wrap justify-center gap-3 max-w-lg">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-lg">
               {suggestedPrompts.map((prompt, i) => (
                 <button 
                   key={i}
                   onClick={() => handleSend(prompt)}
-                  className="text-[13px] font-medium text-[#F3F4F6] bg-[#161A20] hover:bg-[rgba(255,255,255,0.08)] px-4 py-2.5 rounded-full border border-[rgba(255,255,255,0.08)] transition-colors"
+                  className="text-xs sm:text-[13px] font-medium text-[#F3F4F6] bg-[#161A20] hover:bg-[rgba(255,255,255,0.08)] px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border border-[rgba(255,255,255,0.08)] transition-colors"
                 >
                   {prompt}
                 </button>
@@ -102,13 +102,13 @@ export function AssistantPage() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-6">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-4 sm:space-y-6">
             {messages.map(msg => (
               <ChatMessage key={msg.id} message={msg} />
             ))}
             
             {isTyping && (
-              <div className="flex gap-4">
+              <div className="flex gap-3 sm:gap-4">
                 <div className="shrink-0 pt-1">
                   <ConeMascot waving={false} size={28} title="" />
                 </div>
@@ -123,7 +123,7 @@ export function AssistantPage() {
           </div>
         )}
 
-        <div className="p-4 sm:p-6 bg-[#0E1013] shrink-0">
+        <div className="p-2 sm:p-4 lg:p-6 bg-[#0E1013] shrink-0 pb-16 lg:pb-6">
           <div className="bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[28px] p-1.5 flex items-center relative shadow-lg">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
@@ -134,7 +134,7 @@ export function AssistantPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about local road safety..."
-                className="w-full bg-[#0E1013] border-none rounded-full py-3.5 pl-6 pr-14 text-[#F3F4F6] placeholder-[#9CA3AF] focus:outline-none text-base"
+                className="w-full bg-[#0E1013] border-none rounded-full py-3 sm:py-3.5 pl-4 sm:pl-6 pr-12 sm:pr-14 text-[#F3F4F6] placeholder-[#9CA3AF] focus:outline-none text-sm sm:text-base"
               />
               <button 
                 type="submit" 

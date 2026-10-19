@@ -155,7 +155,7 @@ export function MapPage() {
 
   return (
     <DashboardLayout>
-      <div className="fixed inset-0 left-64 bg-[#0E1013] -z-10" />
+      <div className="fixed inset-0 left-0 lg:left-64 bg-[#0E1013] -z-10" />
       <div className="font-['Inter'] text-[#F3F4F6] pb-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -201,17 +201,21 @@ export function MapPage() {
             </div>
 
             {/* Floating Action Buttons */}
-            <div className="absolute bottom-6 right-6 z-[1000] flex flex-col gap-3 pointer-events-none items-end">
+            <div className="absolute bottom-24 lg:bottom-6 right-4 sm:right-6 z-[1000] flex flex-col gap-3 pointer-events-none items-end">
               <button 
                 onClick={handleLocate}
-                className="pointer-events-auto w-[48px] h-[48px] rounded-full bg-[#161A20] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#F3F4F6] shadow-lg hover:border-[#FFC629]/50 transition-colors"
+                className="pointer-events-auto min-w-[44px] min-h-[44px] w-12 h-12 rounded-full bg-[#161A20]/95 backdrop-blur-sm border border-[rgba(255,255,255,0.12)] flex items-center justify-center text-[#F3F4F6] shadow-xl hover:border-[#FFC629] active:scale-95 transition-all"
                 title="My Location"
+                aria-label="My Location"
               >
                 <Navigation className="w-5 h-5" />
               </button>
-              <Link to="/report" className="pointer-events-auto flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#FFC629] text-[#0E1013] shadow-lg hover:opacity-90 transition-opacity font-bold">
+              <Link 
+                to="/report" 
+                className="pointer-events-auto flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#FFC629] text-[#0E1013] shadow-xl hover:opacity-90 active:scale-95 transition-all font-bold text-sm"
+              >
                 <AlertTriangle className="w-5 h-5 shrink-0" />
-                <span className="hidden md:inline">Report Hazard</span>
+                <span className="inline">Report</span>
               </Link>
             </div>
 

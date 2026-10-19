@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, Video, MapPin, Send, Loader2, Cloud } from 'lucide-react';
+import { Camera, MapPin, Send, Loader2, Cloud, Mic } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { supabase } from '../lib/supabase';
 import axios from 'axios';
@@ -224,7 +225,7 @@ export function ReportPage() {
 
   return (
     <DashboardLayout>
-      <div className="fixed inset-0 left-64 bg-[#0E1013] -z-10" />
+      <div className="fixed inset-0 left-0 lg:left-64 bg-[#0E1013] -z-10" />
       <div className="font-['Inter'] text-[#F3F4F6] pb-12">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[#F3F4F6] font-['Sora',sans-serif]">Report a Road Hazard</h1>
@@ -244,13 +245,13 @@ export function ReportPage() {
               <Camera className="w-4 h-4 mr-2" />
               Photo Report
             </button>
-            <button
-              disabled
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-full text-sm font-bold transition-all opacity-50 cursor-not-allowed text-[#9CA3AF] bg-transparent`}
+            <Link
+              to="/voice-complaint"
+              className="flex-1 flex items-center justify-center py-3 px-4 rounded-full text-sm font-bold transition-all text-[#9CA3AF] bg-transparent hover:text-[#F3F4F6] hover:bg-[rgba(255,255,255,0.03)]"
             >
-              <Video className="w-4 h-4 mr-2" />
-              Video Report (Coming Soon)
-            </button>
+              <Mic className="w-4 h-4 mr-2 text-[#FFC629]" />
+              Voice Complaint Report
+            </Link>
           </div>
 
           {error && <div className="mb-6 p-4 bg-[#EF4444]/10 border border-[#EF4444]/50 rounded-lg text-[#EF4444]">{error}</div>}

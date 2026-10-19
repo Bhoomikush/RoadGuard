@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight, Loader2, RefreshCw, Sparkles, Cloud } from 'lucide-react';
+import { AlertTriangle, MapPin, Activity, CheckCircle, ShieldAlert, Bot, ArrowRight, Loader2, RefreshCw, Sparkles, Cloud, Mic } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Badge } from '../components/ui/Badge';
@@ -504,17 +504,26 @@ export function DashboardPage() {
     <div className="bg-[#161A20] rounded-[24px] border border-[rgba(255,255,255,0.08)] p-6">
       <h3 className="text-lg font-semibold text-[#F3F4F6] font-['Sora',sans-serif] mb-4">Quick Actions</h3>
       <div className="flex flex-col gap-3">
+        <Link to="/voice-complaint" className="flex items-center p-3 rounded-xl bg-[#0E1013] border border-[rgba(255,255,255,0.08)] hover:border-[#FFC629]/50 transition-colors">
+          <div className="w-10 h-10 rounded-lg bg-[#FFC629]/10 flex items-center justify-center mr-4">
+            <Mic className="w-5 h-5 text-[#FFC629]" />
+          </div>
+          <div>
+            <span className="font-medium text-sm block">Voice Complaint</span>
+            <span className="text-[11px] text-[#9CA3AF]">Record & auto-draft letter</span>
+          </div>
+        </Link>
         <Link to="/map" className="flex items-center p-3 rounded-xl bg-[#0E1013] border border-[rgba(255,255,255,0.08)] hover:border-[#FFC629]/50 transition-colors">
           <div className="w-10 h-10 rounded-lg bg-[#FFC629]/10 flex items-center justify-center mr-4">
             <MapPin className="w-5 h-5 text-[#FFC629]" />
           </div>
-          <span className="font-medium">View Live Map</span>
+          <span className="font-medium text-sm">View Live Map</span>
         </Link>
         <Link to="/assistant" className="flex items-center p-3 rounded-xl bg-[#0E1013] border border-[rgba(255,255,255,0.08)] hover:border-[#FFC629]/50 transition-colors">
           <div className="w-10 h-10 rounded-lg bg-[#FFC629]/10 flex items-center justify-center mr-4">
             <Bot className="w-5 h-5 text-[#FFC629]" />
           </div>
-          <span className="font-medium">Ask RoadGuard AI</span>
+          <span className="font-medium text-sm">Ask RoadGuard AI</span>
         </Link>
       </div>
     </div>
@@ -557,7 +566,7 @@ export function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="fixed inset-0 left-64 bg-[#0E1013] -z-10" />
+      <div className="fixed inset-0 left-0 lg:left-64 bg-[#0E1013] -z-10" />
       <div className="font-['Inter'] text-[#F3F4F6]">
         
         {/* Page Header */}

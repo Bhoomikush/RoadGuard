@@ -11,7 +11,8 @@ import {
   Bot, 
   Settings, 
   LogOut,
-  X
+  X,
+  Mic
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -47,6 +48,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Report Hazard', path: '/report', icon: AlertTriangle },
+    { name: 'Voice Complaint', path: '/voice-complaint', icon: Mic },
     { name: 'Live Map', path: '/map', icon: MapIcon },
     { name: 'My Reports', path: '/reports', icon: FileText },
     { name: 'Risk Zones', path: '/risk-zones', icon: Activity },
