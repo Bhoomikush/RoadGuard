@@ -17,6 +17,7 @@ const RiskZonesPage = React.lazy(() => import('./pages/RiskZonesPage').then(m =>
 const AssistantPage = React.lazy(() => import('./pages/AssistantPage').then(m => ({ default: m.AssistantPage })));
 const CommunityFeedPage = React.lazy(() => import('./pages/CommunityFeedPage').then(m => ({ default: m.CommunityFeedPage })));
 const AuthorityDashboard = React.lazy(() => import('./pages/AuthorityDashboard').then(m => ({ default: m.AuthorityDashboard })));
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const VoiceComplaintPage = React.lazy(() => import('./pages/VoiceComplaintPage').then(m => ({ default: m.VoiceComplaintPage })));
 
 const LoadingFallback = () => (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
