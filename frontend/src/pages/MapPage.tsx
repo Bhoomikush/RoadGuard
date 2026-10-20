@@ -168,54 +168,56 @@ export function MapPage() {
           {/* Map Container Wrapper */}
           <div className="lg:col-span-3 bg-[#161A20] border border-[rgba(255,255,255,0.08)] rounded-[24px] overflow-hidden relative shadow-inner h-[50vh] min-h-[380px] lg:h-full lg:min-h-0 flex flex-col">
             
-            {/* Floating Search/Filter Panel */}
-            <div className="absolute top-4 left-4 right-4 md:right-auto z-[1000] bg-[#161A20]/95 backdrop-blur-md rounded-[24px] border border-[rgba(255,255,255,0.08)] p-3 md:w-96 flex flex-col gap-3 shadow-lg pointer-events-auto max-h-[40%] overflow-y-auto scrollbar-hide">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+            {/* Top Compact Floating Controls */}
+            <div className="absolute top-3 left-3 right-3 sm:right-auto sm:left-4 sm:top-4 z-[1000] sm:w-[360px] flex flex-col gap-2 pointer-events-auto">
+              <div className="relative shadow-xl rounded-2xl overflow-hidden bg-[#161A20]/90 backdrop-blur-md border border-[rgba(255,255,255,0.12)]">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                 <input 
                   type="text" 
-                  placeholder="Search locations..." 
-                  className="w-full h-[48px] bg-[#0E1013] border border-[rgba(255,255,255,0.08)] rounded-[12px] pl-12 pr-4 text-[#F3F4F6] placeholder:text-[#9CA3AF] focus:border-[#FFC629] focus:outline-none transition-colors font-['Inter']"
+                  placeholder="Search hazard locations..." 
+                  className="w-full h-11 bg-transparent pl-10 pr-4 text-sm text-[#F3F4F6] placeholder:text-[#9CA3AF] focus:outline-none font-['Inter']"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x">
-                {['all', 'high', 'medium', 'low'].map(level => (
+              <div className="flex gap-1.5 p-1 bg-[#161A20]/90 backdrop-blur-md rounded-xl border border-[rgba(255,255,255,0.08)] shadow-lg">
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'high', label: 'High' },
+                  { id: 'medium', label: 'Medium' },
+                  { id: 'low', label: 'Low' },
+                ].map(level => (
                   <button 
-                    key={level}
-                    onClick={() => setSeverityFilter(level)}
-                    className={`snap-center shrink-0 px-4 py-1.5 rounded-full text-sm font-bold border transition-colors ${
-                      severityFilter === level 
-                        ? level === 'all' ? 'bg-[#FFC629] border-[#FFC629] text-[#0E1013]' 
-                          : level === 'high' ? 'bg-[#EF4444] border-[#EF4444] text-[#0E1013]'
-                          : level === 'medium' ? 'bg-[#F59E0B] border-[#F59E0B] text-[#0E1013]'
-                          : 'bg-[#22C55E] border-[#22C55E] text-[#0E1013]'
-                        : 'bg-[#161A20] border-[rgba(255,255,255,0.08)] text-[#9CA3AF] hover:text-[#F3F4F6] hover:border-[rgba(255,255,255,0.2)]'
+                    key={level.id}
+                    onClick={() => setSeverityFilter(level.id)}
+                    className={`flex-1 py-1 px-2.5 rounded-lg text-xs font-semibold transition-all ${
+                      severityFilter === level.id 
+                        ? 'bg-[#FFC629] text-[#0E1013] shadow-sm font-bold'
+                        : 'text-[#9CA3AF] hover:text-[#F3F4F6]'
                     }`}
                   >
-                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                    {level.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Floating Action Buttons */}
-            <div className="absolute bottom-24 lg:bottom-6 right-4 sm:right-6 z-[1000] flex flex-col gap-3 pointer-events-none items-end">
+            {/* Bottom Right Floating Action Buttons */}
+            <div className="absolute bottom-4 right-3 sm:right-4 z-[1000] flex flex-col gap-2.5 pointer-events-none items-end">
               <button 
                 onClick={handleLocate}
-                className="pointer-events-auto min-w-[44px] min-h-[44px] w-12 h-12 rounded-full bg-[#161A20]/95 backdrop-blur-sm border border-[rgba(255,255,255,0.12)] flex items-center justify-center text-[#F3F4F6] shadow-xl hover:border-[#FFC629] active:scale-95 transition-all"
-                title="My Location"
-                aria-label="My Location"
+                className="pointer-events-auto w-11 h-11 rounded-full bg-[#161A20]/90 backdrop-blur-md border border-[rgba(255,255,255,0.15)] flex items-center justify-center text-[#F3F4F6] shadow-xl hover:text-[#FFC629] hover:border-[#FFC629] active:scale-95 transition-all"
+                title="Center on my location"
+                aria-label="Center on my location"
               >
-                <Navigation className="w-5 h-5" />
+                <Navigation className="w-4 h-4" />
               </button>
               <Link 
                 to="/report" 
-                className="pointer-events-auto flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#FFC629] text-[#0E1013] shadow-xl hover:opacity-90 active:scale-95 transition-all font-bold text-sm"
+                className="pointer-events-auto flex items-center justify-center gap-1.5 h-11 px-4 rounded-full bg-[#FFC629] text-[#0E1013] shadow-xl hover:opacity-90 active:scale-95 transition-all font-bold text-xs"
               >
-                <AlertTriangle className="w-5 h-5 shrink-0" />
-                <span className="inline">Report</span>
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Report</span>
               </Link>
             </div>
 

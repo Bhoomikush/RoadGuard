@@ -434,8 +434,26 @@ export function ReportsPage() {
                       </div>
                       
                       {report.imageUrl && (
-                        <div className="shrink-0 sm:w-[280px] h-[220px] sm:h-auto w-full border-t sm:border-t-0 sm:border-l border-[rgba(255,255,255,0.08)] overflow-hidden bg-[#0E1013] relative">
-                          <img src={report.imageUrl} alt={report.type} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="shrink-0 sm:w-[280px] h-[220px] sm:h-auto w-full border-t sm:border-t-0 sm:border-l border-[rgba(255,255,255,0.08)] overflow-hidden bg-[#0E1013] relative flex items-center justify-center">
+                          {report.imageUrl.endsWith('.webm') || report.imageUrl.endsWith('.mp4') ? (
+                            <video src={report.imageUrl} controls className="w-full h-full object-cover" />
+                          ) : (
+                            <img 
+                              src={report.imageUrl} 
+                              alt={report.type} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                                const parent = (e.target as HTMLElement).parentElement;
+                                if (parent && !parent.querySelector('.img-fallback')) {
+                                  const fallback = document.createElement('div');
+                                  fallback.className = 'img-fallback flex flex-col items-center justify-center p-6 text-center text-[#9CA3AF]';
+                                  fallback.innerHTML = '<span class="text-xs font-semibold text-[#FFC629] mb-1">Evidence Attached</span><span class="text-[11px] text-[#9CA3AF]">Voice complaint report</span>';
+                                  parent.appendChild(fallback);
+                                }
+                              }}
+                            />
+                          )}
                         </div>
                       )}
                     </div>

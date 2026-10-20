@@ -493,7 +493,7 @@ export function VoiceComplaintPage() {
   return (
     <DashboardLayout>
       <div className="fixed inset-0 left-0 lg:left-64 bg-[#0E1013] -z-10" />
-      <div className="font-['Inter'] text-[#F3F4F6] max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-24">
+      <div className="font-['Inter'] text-[#F3F4F6] max-w-4xl mx-auto px-4 py-6 sm:py-8 pb-36 sm:pb-28">
         
         {/* Header */}
         <div className="mb-8">
@@ -568,11 +568,11 @@ export function VoiceComplaintPage() {
             )}
 
             {/* Video Preview / Camera Viewport */}
-            <div className="aspect-video bg-[#0E1013] rounded-2xl border border-[rgba(255,255,255,0.08)] relative overflow-hidden flex items-center justify-center">
+            <div className="w-full aspect-[4/3] sm:aspect-video max-h-[380px] bg-[#0E1013] rounded-2xl border border-[rgba(255,255,255,0.12)] relative overflow-hidden flex items-center justify-center shadow-inner">
               {isRecording ? (
                 <>
                   <video ref={videoLiveRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                  <div className="absolute top-4 left-4 bg-red-600/90 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 animate-pulse">
+                  <div className="absolute top-4 left-4 bg-red-600/90 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 animate-pulse shadow-lg">
                     <span className="w-2.5 h-2.5 rounded-full bg-white" />
                     RECORDING ({60 - recordingDuration}s left)
                   </div>
@@ -585,16 +585,16 @@ export function VoiceComplaintPage() {
                   </div>
                 </>
               ) : previewUrl ? (
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full bg-black">
                   <video src={previewUrl} controls className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#FFC629]/10 border border-[#FFC629]/20 flex items-center justify-center mb-4">
-                    <Camera className="w-8 h-8 text-[#FFC629]" />
+                <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFC629]/10 border border-[#FFC629]/20 flex items-center justify-center mb-3 sm:mb-4 shadow-sm">
+                    <Camera className="w-7 h-7 sm:w-8 sm:h-8 text-[#FFC629]" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#F3F4F6] mb-1">Camera Ready</h3>
-                  <p className="text-sm text-[#9CA3AF] max-w-sm">
+                  <h3 className="text-base sm:text-lg font-bold text-[#F3F4F6] mb-1 font-['Sora',sans-serif]">Camera Ready</h3>
+                  <p className="text-xs sm:text-sm text-[#9CA3AF] max-w-xs sm:max-w-sm leading-relaxed">
                     Hold your phone or device to show the road defect (pothole, crack, waterlogging) while clearly describing the danger.
                   </p>
                 </div>
