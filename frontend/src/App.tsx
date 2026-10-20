@@ -19,6 +19,7 @@ const CommunityFeedPage = React.lazy(() => import('./pages/CommunityFeedPage').t
 const AuthorityDashboard = React.lazy(() => import('./pages/AuthorityDashboard').then(m => ({ default: m.AuthorityDashboard })));
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const VoiceComplaintPage = React.lazy(() => import('./pages/VoiceComplaintPage').then(m => ({ default: m.VoiceComplaintPage })));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[#0E1013] flex items-center justify-center">
@@ -48,6 +49,7 @@ function App() {
             <Route path="/risk-zones" element={<ProtectedRoute><RiskZonesPage /></ProtectedRoute>} />
             <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><CommunityFeedPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/authority-dashboard" element={<AuthorityRoute><AuthorityDashboard /></AuthorityRoute>} />
             
             {/* Catch-all */}
