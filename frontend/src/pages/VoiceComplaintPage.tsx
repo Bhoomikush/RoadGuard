@@ -246,24 +246,88 @@ export function VoiceComplaintPage() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setLatitude(lat);
-        setLongitude(lng);
-        setAccuracy(Math.round(pos.coords.accuracy));
-        await performReverseGeocode(lat, lng);
-        setIsLocating(false);
-      },
-      (err) => {
-        console.warn('Geolocation error:', err);
-        setLocationError(`GPS error: ${err.message || 'Unable to retrieve location'}. Please type location manually below.`);
+    const applyPosition = async (pos: GeolocationPosition) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setLatitude(lat);
+      setLongitude(lng);
+      setAccuracy(Math.round(pos.coords.accuracy));
+      setLocationError('');
+      await performReverseGeocode(lat, lng);
+      setIsLocating(false);
+    };
+
+    // Helper promise for getCurrentPosition
+    const requestCoords = (options: PositionOptions): Promise<GeolocationPosition> => {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+    };
+
+    try {
+      // Pass 1: Try high accuracy with a 15-second timeout and 1-minute acceptable cache
+      const position = await requestCoords({
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 60000
+      });
+      await applyPosition(position);
+      return;
+    } catch (firstErr: any) {
+      console.warn('High accuracy GPS timed out or failed, falling back to network/cell tower location...', firstErr);
+
+      // If user explicitly denied permission, do not retry
+      if (firstErr?.code === 1) { // PERMISSION_DENIED
+        setLocationError('Location permission denied. Please allow location access in your browser/device settings, or enter details manually.');
         setIsLocating(false);
         setIsManualLocation(true);
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
-    );
+        return;
+      }
+
+      // Pass 2: Retry with low accuracy (Cell/Wi-Fi positioning), allowing older cached location
+      try {
+        const fallbackPos = await requestCoords({
+          enableHighAccuracy: false,
+          timeout: 12000,
+          maximumAge: 300000 // 5 minutes cache
+        });
+        await applyPosition(fallbackPos);
+        return;
+      } catch (secondErr: any) {
+        console.warn('Network location also failed:', secondErr);
+      }
+    }
+
+    // Pass 3: IP-based coarse fallback so the user is never stuck
+    try {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData.latitude && ipData.longitude) {
+          const lat = parseFloat(ipData.latitude);
+          const lng = parseFloat(ipData.longitude);
+          setLatitude(lat);
+          setLongitude(lng);
+          setAccuracy(5000); // Coarse network indicator
+          const coarseAddr = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(', ');
+          setLocationAddress(coarseAddr || `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
+          if (ipData.city) setCityName(ipData.city);
+          if (ipData.region) setStateName(ipData.region);
+          await performReverseGeocode(lat, lng);
+          setLocationError('Exact GPS timed out (poor satellite visibility). Approximate network location was detected. You can refine the street name below.');
+          setIsLocating(false);
+          setIsManualLocation(true);
+          return;
+        }
+      }
+    } catch (ipErr) {
+      console.warn('IP location fallback failed:', ipErr);
+    }
+
+    // If all fail, display helpful guidance
+    setLocationError('GPS signal timed out (common indoors or under weak satellite coverage). Please enter the street name or landmark manually below.');
+    setIsLocating(false);
+    setIsManualLocation(true);
   };
 
   const performReverseGeocode = async (lat: number, lng: number) => {
@@ -677,7 +741,7 @@ export function VoiceComplaintPage() {
         {/* STEP 2: Location Capture & Reverse Geocoding */}
         {currentStep === 2 && (
           <div className="bg-[#161A20] rounded-[24px] border border-[rgba(255,255,255,0.08)] p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold font-['Sora',sans-serif] text-[#F3F4F6]">Step 2: Confirm Location</h2>
                 <p className="text-sm text-[#9CA3AF]">Road authorities require accurate location details to dispatch maintenance teams.</p>
@@ -685,7 +749,7 @@ export function VoiceComplaintPage() {
               <button
                 onClick={captureGpsLocation}
                 disabled={isLocating}
-                className="h-9 px-4 rounded-full bg-[#0E1013] border border-[rgba(255,255,255,0.15)] text-[#FFC629] text-xs font-semibold hover:border-[#FFC629] transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                className="self-start sm:self-auto h-9 px-4 rounded-full bg-[#0E1013] border border-[rgba(255,255,255,0.15)] text-[#FFC629] text-xs font-semibold hover:border-[#FFC629] transition-colors flex items-center gap-1.5 disabled:opacity-50 shrink-0"
               >
                 {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
                 {isLocating ? 'Detecting GPS...' : 'Refresh GPS Location'}
